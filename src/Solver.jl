@@ -5,20 +5,20 @@ function assembleStiffAndForce(domain::Domain)
     Fint = zeros(Float64, domain.neqs)
   # K = zeros(Float64, domain.neqs, domain.neqs)
     ii = Int64[]; jj = Int64[]; vv = Float64[]
-    neles = domain.neles
+    nelem = domain.nelems
 
   # Loop over the elements in the elementGroup
-    for iele  = 1:neles
-        element = domain.elements[iele]
+    for elem_id  = 1:nelem
+        element = domain.elements[elem_id]
 
     # Get the element nodes
         el_nodes = getNodes(element)
 
     # Get the element nodes equation numbers
-        el_eqns = getEqns(domain, iele)
+        el_eqns = getEqns(domain, elem_id)
     
     # Get the element nodes dof numbers
-        el_dofs = getDofs(domain, iele)
+        el_dofs = getDofs(domain, elem_id)
 
         el_state  = getState(domain, el_dofs)
 

@@ -32,7 +32,7 @@ function Helmhotz_test()
     
     
     
-    nex, ney = 20, 20
+  
     """
     ----- 3 -----
     |           |
@@ -42,16 +42,26 @@ function Helmhotz_test()
     |           |
     ----- 1 -----
     """
-    bc = ["Dirichlet", "Dirichlet", "Neumann", "Neumann"]
-    bc_func = [(x,y)-> x+y, (x,y)-> x+y, (x,y)-> -sin(π*x)/(-2π)+1, (x,y)-> -sin(π*y)/(-2π)-1 ]
+    bc_types = ["Dirichlet", "Dirichlet", "Neumann", "Neumann"]
+    bc_funcs = [(x,y)-> x+y, (x,y)-> x+y, (x,y)-> -sin(π*x)/(-2π)+1, (x,y)-> -sin(π*y)/(-2π)-1 ]
     ω = 1.0
     c_func = (x,y)-> 1.0 + x + y
     s_func = (x,y)-> -sin(π*x)sin(π*y) - ω^2/(1 + x + y)^2 * (sin(π*x)sin(π*y)/(-2π^2) + x + y)
     uref_func = (x,y)-> sin(π*x)sin(π*y)/(-2π^2) + x + y
     
-    nex, ney = 40, 40
-    nodes, elements, DBC, DBC_ele, u_g,  NBC, NBC_ele, ∂u∂n_ele = box(nex, ney, bc, bc_func, ω, c_func, s_func; porder = 2, ngp = 3, Lx = 1.0, Ly = 1.0)
-    domain = Domain(nodes,  elements,  DBC,   DBC_ele, u_g,  NBC,  NBC_ele,  ∂u∂n_ele, s_func)
+    nex, ney = 20, 20
+    Lx, Ly = 1.0, 1.0
+    porder = 2
+    nodes, elnodes, bc_nodes = box(Lx, Ly, nex, ney, porder)
+    ngp = 3
+
+    domain = Domain(nodes, elnodes,
+    bc_nodes, bc_types, bc_funcs,
+    porder, ngp; 
+    ω = ω, 
+    c_func = c_func, 
+    s_func = s_func)
+
     domain = solve!(domain)
     
     
@@ -62,7 +72,7 @@ function Helmhotz_test()
     
     @info "error is ", norm(state_ref - domain.state)
     
-    visScalarField(domain, domain.state - state_ref)
+    visScalarField(domain, domain.state)
     
     end
 

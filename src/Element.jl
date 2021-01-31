@@ -74,25 +74,21 @@ function getStiffAndForce(self::Quad, us::Array{Float64})
         
         dus = us' * dh 
 
-        
-
         fint += (dh * dus' -  ω_div_c_sq[k] * u * h) * self.weights[k] # 1x8
-        
-
+    
         stiff += (dh * dh' -  ω_div_c_sq[k] * h * h') * self.weights[k] # 8x8
-        
     end
     
     return fint, stiff
 end
 
-function getLocalEdgeNodes(elem::Quad, iedge::Int64)
+function getLocalEdgeNodes(elem::Quad, edge_id::Int64)
     porder = elem.porder
 
     if porder == 1
-        loc_id = [iedge, mod1(iedge+1,4)]
+        loc_node_ids = [edge_id, mod1(edge_id+1,4)]
     elseif porder == 2
-        loc_id = [iedge, mod1(iedge+1,4), 4 + iedge]
+        loc_node_ids = [edge_id, mod1(edge_id+1,4), 4 + edge_id]
     else
         error("porder error porder ==", porder)
     end
@@ -113,10 +109,10 @@ function computeLoad(elem::Quad, e::Int64, ∂u∂n_ele::Array{Float64,1})
     elem_coords = zeros(Float64, porder + 1, 2)
     
     
-    loc_id = getLocalEdgeNodes(elem, e)
+    loc_node_ids = getLocalEdgeNodes(elem, e)
     
     
-    edge_coords = elem.coords[loc_id, :]
+    edge_coords = elem.coords[loc_node_ids, :]
     
     f = zeros(Float64, porder+1)
     
@@ -134,7 +130,6 @@ function computeLoad(elem::Quad, e::Int64, ∂u∂n_ele::Array{Float64,1})
     return f
 end
 
-
 """
 Force load on one edge of the plate, 
 The edge is [0,L], which is discretized to ne elements, with porder-th order polynomials
@@ -143,55 +138,59 @@ args: an array,
 for Constant load, it has p1 and p2, in tangential and normal direction
 for "Gaussian" load, it has p, x0, and σ, the force is in the normal direction
 """
-function compute∂u∂n(elem::Quad, e, u)
+function compute∂u∂n(elem::Quad, edge_id::Int64, u::Array{Float64, 1})
+    loc_node_ids = getLocalEdgeNodes(elem, edge_id)
+    coords = elem.coords
+
+    porder = elem.porder
+    ∂u∂n_ele = zeros(Float64, porder+1)
+    # ξ coordinates of each nodal point
     
-
-
-    dhdx = Array{Float64}[]
-    weights = Float64[]
-    hs = Array{Float64}[]
-
-    # that number of points
-    normals = get1DElemNormal( edge_coords )
-
-
-    loc_id = getLocalEdgeNodes(elem, e)
-
-
     ξ_coords = [-1.0 -1.0;
-                1.0  -1.0;
-                1.0   1.0;
-                -1.0  1.0;
-                0.0  -1.0;
-                1.0   0.0;
-                0.0   1.0;
-                -1.0  0.0;
-                0.0   0.0]
-
+    1.0  -1.0;
+    1.0   1.0;
+    -1.0  1.0;
+    0.0  -1.0;
+    1.0   0.0;
+    0.0   1.0;
+    -1.0  0.0;
+    0.0   0.0]
+    
     ∂u∂n = zeros(Float64, porder+1)
     for k = 1:porder+1
+        
+        ξ = ξ_coords[loc_node_ids[k], :]
+        # println(ξ)
+        if porder == 1
+            sData = getShapeQuad4(ξ)
+        elseif porder == 2
+            sData = getShapeQuad9(ξ) 
+        else
+            error("not implemented porder = ", porder)
+        end
+        #(∂u/∂x, ∂u/∂y) = (∂u/∂ξ1, ∂u/∂ξ2) [∂(x,y)/∂(ξ1,ξ2)]⁻¹
+        dhdx = sData[:,2:end]
+        jac = coords' * dhdx
 
-      ξ = ξ_coords[loc_id[k], :]#
+        # tagent = (edge_id == 1 || edge_id == 3 ? jac[1, :] : jac[2, :])
+        if edge_id == 1
+            tangent = jac[1, :]
+        elseif edge_id == 2
+            tangent = jac[2, :]
+        elseif edge_id == 3
+            tangent = -jac[1, :]
+        elseif edge_id == 4
+            tangent = -jac[2, :]
+        else
+            error("local edge id is ", edge_id)
+        end
 
-      # println(ξ)
-      if ele_size[1] == 4
-          sData = getShapeQuad4(ξ)
-      elseif ele_size[1] == 9
-          sData = getShapeQuad9(ξ) 
-      else
-          error("not implemented ele_size[1] = ", ele_size[1])
-      end
-      
-      dhdx = sData[:,2:end]
+        unit_normal = [tangent[2] ; -tangent[1]]/sqrt(tangent[1]^2 + tangent[2]^2)
 
-      jac = coords' * dhdx
-      
-      
-      ∂u∂n[k] = u * dhdx / jac * normals[k, :]
-
+        ∂u∂n_ele[k] = u' * dhdx / jac * unit_normal
     end
 
-
+    return ∂u∂n_ele
 end
 
 """ 
@@ -215,7 +214,7 @@ function getGaussPoints(coords, hs, ngp_2d)
 end
 
 """
-    getEdgeGaussPoints(elem::Quad, iedge::Int64)
+    getEdgeGaussPoints(elem::Quad, edge_id::Int64)
 ```
     The element nodes are ordered as 
     #   4 ---- 3             #   4 --7-- 3
@@ -225,18 +224,18 @@ end
     edge 1, 2, 3, 4 are (1,2), (2,3), (3,4), (4,1)
                     are (1,2,5), (2,3,6), (3,4,7), (4,1,8)
 ```
-Returns the Gauss quadrature nodes of the element on its iedge-th edge in the undeformed domain
+Returns the Gauss quadrature nodes of the element on its edge_id-th edge in the undeformed domain
 """
-function getEdgeGaussPoints(elem::Quad, iedge::Int64)
+function getEdgeGaussPoints(elem::Quad, edge_id::Int64)
     n = length(elem.elnodes)
     ngp = Int64(sqrt(length(elem.weights)))
 
     @assert(n == 4 || n == 9)
 
-    n1, n2 = iedge, ((iedge+1)==5 ? 1 : iedge+1)
-    loc_id = (n == 4 ? [n1, n2] : [n1, n2, iedge+4])
+    n1, n2 = edge_id, ((edge_id+1)==5 ? 1 : edge_id+1)
+    loc_node_ids = (n == 4 ? [n1, n2] : [n1, n2, edge_id+4])
 
-    x = elem.coords[loc_id, :]
+    x = elem.coords[loc_node_ids, :]
 
     gnodes = zeros(ngp,2)
 

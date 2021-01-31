@@ -10,7 +10,7 @@ Test the Lambda function output
     g -> ∂u/∂n
 """
 
-function Helmhotz_Lambda_test()
+function Helmhotz_Lambda_test(nex::Int64 = 20, ney::Int64 = 20, porder::Int64 = 2, ngp::Int64 = 3)
     """
     -Δu - ω^2/c^2 u = f  in Ω=[0,1]×[0,1]
     
@@ -57,11 +57,8 @@ function Helmhotz_Lambda_test()
     
     ∇uref_func = (x,y)-> ( cos(π*x)sin(π*y)/(-2π) + 1,  sin(π*x)cos(π*y)/(-2π) + 1)
     
-    nex, ney = 40, 40
     Lx, Ly = 1.0, 1.0
-    porder = 2
     nodes, elnodes, bc_nodes = box(Lx, Ly, nex, ney, porder)
-    ngp = 3
     
     domain = Domain(nodes, elnodes,
     bc_nodes, bc_types, bc_funcs,
@@ -108,7 +105,29 @@ function Helmhotz_Lambda_test()
 
     end
 
-    @info "rel. error is ", norm(DBC_∂u∂n_ele_ref -  DBC_∂u∂n_ele)/norm(DBC_∂u∂n_ele_ref)
+    error =  norm(DBC_∂u∂n_ele_ref -  DBC_∂u∂n_ele)/norm(DBC_∂u∂n_ele_ref)
 end
 
-Helmhotz_Lambda_test()
+
+
+function main()
+    base_n = 10
+    level_n = 3
+    errors = zeros(Float64, level_n)
+    ngp = 3
+    for porder = 1:2
+        for level_id = 1:level_n
+            nex, ney = base_n*2^level_id, base_n*2^level_id
+            errors[level_id] = Helmhotz_Lambda_test(nex, ney, porder, ngp)
+
+            @info "Helmhotz Lambda test : ", "nex = ", nex, " ney = ", ney, " porder = ", porder 
+            @info "Error is ", errors[level_id]
+        end
+        for level_id in 1:level_n-1
+            rate = log2(errors[level_id]) - log2(errors[level_id + 1])
+            @info "rates for level ", level_id, " is ", rate
+        end
+    end
+end
+
+main()

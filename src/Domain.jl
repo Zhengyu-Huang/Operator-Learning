@@ -8,27 +8,28 @@ Date structure for the computatational domain.
     - `nodes`: Float64[nnodes, ndims], coordinate array of all nodes
     - `nelems`: number of elements 
     - `elements`: a list of `nelems` element arrays, each element is a struct 
-    - `ndims`: Int64, dimension of the problem space 
-    - `state`: a matrix of size `nnodes×ndims`. **Current** displacement of all nodal freedoms, `state[1:nnodes]` are for the first direction.
-    - `Dstate`: `nnodes×ndims`. **Previous** displacement of all nodal freedoms, `Dstate[1:nnodes]` are for the first direction.
-    - `LM`:  `Int64[nelems][ndims]`, LM(e,d) is the global equation number (active freedom number) of element e's d th freedom, 
-    
-    ∘ -1 means Dirichlet
-    ∘ >0 means the global equation number
+    - `state`: an array of size `nnodes`. solution of the Helmholtz equation.
+    - `LM`:  `Int64[nelems]`, LM(e, d) is the global equation number (active freedom number) of element e's d th freedom, 
+        ∘ -1 means Dirichlet
+        ∘ >0 means the global equation number
+
     - `DOF`: a matrix of size `nelems×ndims`, DOF(e,d) is the global freedom (including both active and inactive DOFs) number of element e's d th freedom.
-    - `ID`:  a matrix of size `nnodes×ndims`. `ID(n,d)` is the equation number (active freedom number) of node n's $d$-th freedom, 
-    
-    ∘ -1 means fixed (time-independent) Dirichlet
-    ∘ >0 means the global equation number
+    - `ID`:  a matrix of size `nnodes×ndims`. `ID(n)` is the equation number (active freedom number) of node n
+        ∘ -1 means fixed (time-independent) Dirichlet
+        ∘ >0 means the global equation number
+
     - `neqs`:  Int64,  number of equations, a.k.a., active freedoms
     - `eq_to_dof`:  an integer vector of length `neqs`, map from to equation number (active freedom number) to the freedom number (Int64[1:nnodes] are for the first direction) 
     - `dof_to_eq`:  a bolean array of size `nnodes×ndims`, map from freedom number(Int64[1:nnodes] are for the first direction) to booleans (active freedoms(equation number) are true)
-    - `DBC`:  Int64[nnodes, ndims], DBC[n,d] is the displacement boundary condition of node n's dth freedom,
-    -1 means fixed Dirichlet boundary nodes
-    - `ug`:  Float64[nnodes, ndims], values for fixed(time-independent) Dirichlet boundary conditions of node n's dth freedom,
-    - `NBC`: Int64[nnodes, ndims], `NBC[n,d]`` is the force Neumann condition of node n's dth freedom,
-    -1 means Neumann condition nodes
-    - `∂u∂n`:  Float64[neqs], constant (time-independent) nodal forces on these freedoms
+    - `DBC`:  Int64[nnodes], DBC[n] is the Dirichlet boundary condition of node n,
+        ∘ -1 means fixed Dirichlet boundary nodes
+    - `DBC_ele`: Int64[number of Dirichlet edges, 3]: element id, element local edge id, boundary condition id
+    - `ug`:  Float64[nnodes], values for Dirichlet boundary conditions of node n,
+    - `NBC`: Int64[nnodes], `NBC[n]`` is the Neumann condition of node n,
+        ∘ -1 means Neumann condition nodes
+    - `NBC_ele`: Int64[number of Neumann edges, 3]: element id, element local edge id, boundary condition id
+    - `∂u∂n_ele`:  Int64[number of Neumann edges, number of nodes on each edge], constant Neumann condition cooresponding to  NBC_ele
+    - `fext`: external force, including body force and Neumann boundary condition induced force
     
 """
 
@@ -56,65 +57,16 @@ mutable struct Domain
 end
 
 
-
-@doc raw"""
-    Domain(nodes::Array{Float64}, elements::Array, ndims::Int64 = 2,
-    DBC::Union{Missing, Array{Int64}} = missing, ug::Union{Missing, Array{Float64}} = missing, NBC::Union{Missing, Array{Int64}} = missing, 
-    f::Union{Missing, Array{Float64}} = missing, edge_traction_data::Array{Int64,2}=zeros(Int64,0,3))
-Creating a finite element domain.
-- `nodes`: coordinate array of all nodes, a `nnodes × 2` matrix
-- `elements`: element array. Each element is a material struct, e.g., [`PlaneStrain`](@ref). 
-- `ndims`: dimension of the problem space. For 2D problems, ndims = 2. 
-- `DBC`:  `nnodes × ndims` integer matrix for essential boundary conditions
-    `DBC[n,d]`` is the displacement boundary condition of node `n`'s $d$-th freedom,
-    
-    ∘ -1: fixed (time-independent) Dirichlet boundary nodes
-    ∘ -2: time-dependent Dirichlet boundary nodes
-- `ug`:  `nnodes × ndims` double matrix, values for fixed (time-independent) Dirichlet boundary conditions of node `n`'s $d$-th freedom,
-- `NBC`: `nnodes × ndims` integer matrix for nodal force boundary conditions.
-NBC[n,d] is the force load boundary condition of node n's dth freedom,
-∘ -1 means constant(time-independent) force load boundary nodes
-∘ -2 means time-dependent force load boundary nodes
-- `f`:  `nnodes × ndims` double matrix, values for constant (time-independent) force load boundary conditions of node n's $d$-th freedom,
-- `Edge_Traction_Data`: `n × 3` integer matrix for natural boundary conditions.
-`Edge_Traction_Data[i,1]` is the element id,
-`Edge_Traction_Data[i,2]` is the local edge id in the element, where the force is exterted (should be on the boundary, but not required)
-`Edge_Traction_Data[i,3]` is the force id, which should be consistent with the last component of the Edge_func in the Globdat
-For time-dependent boundary conditions (`DBC` or `NBC` entries are -2), the corresponding `f` or `ug` entries are not used.
-
 """
-function Domain(nodes::Array{Float64, 2}, elements::Array,
-    DBC::Array{Int64, 1},   DBC_ele::Array{Int64, 2},
-    ug::Array{Float64, 1}, 
-    NBC::Array{Int64, 1},   NBC_ele::Array{Int64, 2}, 
-    ∂u∂n_ele::Array{Float64, 2}, s_func::Function)
-    
-    nnodes = size(nodes,1)
-    nelems = size(elements,1)
-    state = zeros(nnodes)
-    LM = Array{Int64}[]
-    DOF = Array{Int64}[]
-    ID = Int64[]
-    neqs = 0
-    eq_to_dof = Int64[]
-    dof_to_eq = zeros(Bool, nnodes)
-    fext = Float64[]
-    
-    domain = Domain(nnodes, nodes, nelems, elements, state,
-    LM, DOF, ID, neqs, eq_to_dof, dof_to_eq, 
-    DBC, DBC_ele, ug, NBC, NBC_ele, ∂u∂n_ele, fext)
-
-    #set fixed(time-independent) Dirichlet boundary conditions
-    setDirichletBoundary!(domain, DBC, ug)
-    #set constant(time-independent) force load boundary conditions
-    setNeumannBoundary!(domain, NBC, NBC_ele, ∂u∂n_ele)
-
-    setBodyForce!(domain, s_func)
-
-    domain
-end
-
-
+nodes: Float64[number of nodes, 2],    node coordinates
+elnodes: Int64[number of elements, 2], element to node 
+bc_nodes: Bool[number of nodes, number of boundaries], boundary indicator
+bc_types: String[number of boundaries], boundary types, Dirichlet or Neumann
+bc_funcs: Function[number of boundaries], boundary condition functions
+ω: Float64
+c_func: wave speed function
+s_func: source function
+"""
 function Domain(nodes::Array{Float64, 2}, elnodes::Array{Int64, 2},
         bc_nodes::Array{Bool, 2}, bc_types::Array{String, 1}, bc_funcs::Array{Function, 1},
         porder::Int64 = 2, ngp::Int64 = 3; 

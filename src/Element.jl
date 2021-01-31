@@ -55,6 +55,24 @@ function Quad(coords::Array{Float64}, elnodes::Array{Int64}, porder::Int64, ngp:
 
     Quad(porder, ngp, elnodes, coords, hs, dhdx, weights, hs, ω_div_c_sq)
 end
+
+"""
+Quad(coords::Array{Float64}, elnodes::Array{Int64}, props::Dict{String, Any}, ngp::Int64=2)
+"""
+function Quad(coords::Array{Float64}, elnodes::Array{Int64}, porder::Int64, ngp::Int64, 
+              ω::Float64, c_vals::Array{Float64, 1}, )
+    dhdx, weights, hs = get2DElemShapeData( coords, ngp )
+    
+    gps = getGaussPoints(coords, hs, ngp^2)
+
+    ω_div_c_sq = fill!(zeros(Float64, ngp^2), ω^2)
+    for i = 1:ngp^2
+        ω_div_c_sq[i] /= (c_vals * hs[i])^2
+    end
+
+    Quad(porder, ngp, elnodes, coords, hs, dhdx, weights, hs, ω_div_c_sq)
+end
+
 """
 ∫ ∇ u ∇ϕ - ω^2/c^2 u
 """

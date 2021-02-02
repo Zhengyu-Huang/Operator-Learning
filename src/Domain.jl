@@ -431,28 +431,35 @@ end
 
 
 function visScalarField(domain::Domain, state::Array{Float64, 1}; shading= "gouraud", cmap="viridis")
-    vmin, vmax = minimum(state), maximum(state)
+    
+    nodes = domain.nodes
+    porder = domain.elements[1].porder
+    trieles = []
+    
     for e in domain.elements
-
-        eXY = e.coords
-        eC = state[e.elnodes]
-        porder = e.porder
-
+        enodes = e.elnodes
         if porder == 1
-            eX = [eXY[1, 1] eXY[2, 1]; eXY[4, 1] eXY[3, 1]]
-            eY = [eXY[1, 2] eXY[2, 2]; eXY[4, 2] eXY[3, 2]]
-            eC = [eC[1] eC[2]; eC[4] eC[3]]
+            push!(trieles, [enodes[1] enodes[2] enodes[3]])
+            push!(trieles, [enodes[1] enodes[3] enodes[4]])
+            
         elseif porder == 2
-            eX = [eXY[1, 1] eXY[5, 1] eXY[2, 1]; eXY[8, 1] eXY[9, 1] eXY[6, 1];  eXY[4, 1] eXY[7, 1] eXY[3, 1]]
-            eY = [eXY[1, 2] eXY[5, 2] eXY[2, 2]; eXY[8, 2] eXY[9, 2] eXY[6, 2];  eXY[4, 2] eXY[7, 2] eXY[3, 2]]
-            eC = [eC[1] eC[5] eC[2]; eC[8] eC[9] eC[6];  eC[4] eC[7] eC[3]]
+            push!(trieles, [enodes[1] enodes[5] enodes[9]])
+            push!(trieles, [enodes[1] enodes[9] enodes[8]])
+            push!(trieles, [enodes[5] enodes[2] enodes[6]])
+            push!(trieles, [enodes[5] enodes[6] enodes[9]])
+            push!(trieles, [enodes[9] enodes[6] enodes[3]])
+            push!(trieles, [enodes[9] enodes[3] enodes[7]])
+            push!(trieles, [enodes[8] enodes[9] enodes[7]])
+            push!(trieles, [enodes[8] enodes[7] enodes[4]])
+            
         end
-
-        # @info "eX, eY, eC: ", eX, eY, eC
-
-        PyPlot.pcolormesh(eX, eY, eC, shading = shading, cmap = cmap, vmin = vmin, vmax = vmax)
+        
         
     end
-    PyPlot.colorbar()
 
+
+    PyPlot.tripcolor(nodes[:, 1], nodes[:, 2], (vcat(trieles...) .- 1), state, shading = shading, cmap = cmap)
+    PyPlot.colorbar()
+    
+    
 end

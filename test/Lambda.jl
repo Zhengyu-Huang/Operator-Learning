@@ -210,7 +210,7 @@ function main()
     ngp = 3
     for porder = 1:2
         for level_id = 1:level_n
-            nex, ney = base_n*2^level_id, base_n*2^level_id
+            nex, ney = base_n*2^level_id, 2*base_n*2^level_id
             errors[1, level_id] = Helmhotz_Lambda_Edge_Test(nex, ney, porder, ngp)
             errors[2, level_id] = Helmhotz_Lambda_Node_Test(nex, ney, porder, ngp)
 

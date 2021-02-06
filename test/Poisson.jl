@@ -77,7 +77,7 @@ function main()
     ngp = 3
     for porder = 1:2
         for level_id = 1:level_n
-            nex, ney = base_n*2^level_id, base_n*2^level_id
+            nex, ney = base_n*2^level_id, 2*base_n*2^level_id
             errors[level_id] = Poisson_test(nex, ney, porder, ngp)
 
             @info "Poisson test : ", "nex = ", nex, " ney = ", ney, " porder = ", porder 

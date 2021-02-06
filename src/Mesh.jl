@@ -46,9 +46,9 @@ function box(Lx::Float64, Ly::Float64, nex::Int64, ney::Int64, porder::Int64)
     nbcs = 4
     bc_nodes = zeros(Bool, nnodes, nbcs)
     bc_nodes[1:nx, 1] .= true
-    bc_nodes[nx:ny:nx*ny, 2] .= true 
+    bc_nodes[nx:nx:nx*ny, 2] .= true 
     bc_nodes[nx*(ny-1)+1:nx*ny, 3] .= true
-    bc_nodes[1:ny:nx*(ny-1)+1, 4] .= true
+    bc_nodes[1:nx:nx*(ny-1)+1, 4] .= true
     
     
     return nodes, elnodes, bc_nodes

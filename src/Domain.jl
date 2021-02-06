@@ -336,7 +336,89 @@ function setBodyForce!(domain::Domain, s_func::Function)
     domain.fext .+= fbody
 end
 
+@doc """
+computeNeumannOnDirichletEdge(domain::Domain)
 
+Compute the equivalent Neumann boundary condition on Dirichlet Edges
+For each boundary element, when it has Dirichlet edge 
+it is recorded in DBC_ele[i, :] = ele_id  and local_edge_id and bc_id
+The results are an array DBC_∂u∂n_ele[i, :] =  the corresponding normal derivative
+at these nodes
+
+"""
+function computeNeumannOnDirichletEdge(domain::Domain)
+    elements = domain.elements
+    DBC_ele = domain.DBC_ele
+
+    porder = elements[1].porder
+    nDBC_ele = size(DBC_ele, 1)
+    DBC_∂u∂n_ele = zeros(Float64, nDBC_ele, porder+1)
+    
+    
+    for DBC_ele_id = 1:nDBC_ele
+    
+        elem_id, edge_id, bc_id = DBC_ele[DBC_ele_id, :]
+        elem = domain.elements[elem_id]
+        u = domain.state[elem.elnodes]
+        DBC_∂u∂n_ele[DBC_ele_id, :] = compute∂u∂n(elements[elem_id], edge_id, u)
+    end
+
+    return DBC_∂u∂n_ele
+end
+
+@doc """
+computeNeumannOnDirichletNode(domain::Domain, DBC_∂u∂n_ele::Array{Float64, 2}, bc_nodes::Array{Bool, 2}, bc_types::Array{String, 1})
+    
+
+Compute the equivalent Neumann boundary condition on Dirichlet Nodes
+
+The results are an array of size : number_of_boundaries × number_of_nodes 
+∂u∂n_data[bc_id, node_id] =  the corresponding normal derivative
+at the node on the boundary
+
+If the boundary condition is not Dirichlet or the node is not on this boundary, the value is 0
+
+"""
+function computeNeumannOnDirichletNode(domain::Domain, DBC_∂u∂n_ele::Array{Float64, 2}, bc_nodes::Array{Bool, 2}, bc_types::Array{String, 1})
+    elements = domain.elements
+    nnodes = domain.nnodes
+    DBC_ele = domain.DBC_ele
+
+    nbcs = length(bc_types)
+    ∂u∂n_data = zeros(nbcs, nnodes , 2)  # ∂u∂n, weights
+
+    for bc_id = 1:nbcs
+        if bc_types[bc_id] != "Dirichlet"
+            continue
+        end
+
+        nbc_nodes = sum(bc_nodes[:, bc_id])
+        
+        nDBC_ele = size(DBC_∂u∂n_ele, 1)
+        for DBC_ele_id = 1:nDBC_ele
+    
+            elem_id, edge_id, ebc_id = DBC_ele[DBC_ele_id, :]
+
+            if ebc_id == bc_id
+                elem = elements[elem_id]
+                loc_node_ids    = getLocalEdgeNodes(elem, edge_id)
+                global_node_ids = elem.elnodes[loc_node_ids]
+                ∂u∂n_data[bc_id, global_node_ids, 1] .+= DBC_∂u∂n_ele[DBC_ele_id, :]
+                ∂u∂n_data[bc_id, global_node_ids, 2] .+= 1.0 
+            end
+        end
+
+        ∂u∂n_data_on = (∂u∂n_data[bc_id, :, 2] .> 0.5)
+        for n_id = 1:nnodes
+            if ∂u∂n_data_on[n_id] > 0.5
+                ∂u∂n_data[bc_id, n_id, 1] /= ∂u∂n_data[bc_id, n_id, 2]
+                ∂u∂n_data[bc_id, n_id, 2] = 1.0
+            end
+        end
+    end
+
+    return ∂u∂n_data[:,:,1]
+end
 
 @doc """
     getCoords(domain::Domain, el_nodes::Array{Int64})
@@ -430,7 +512,7 @@ function getElems(domain::Domain)
 end
 
 
-function visScalarField(domain::Domain, state::Array{Float64, 1}; shading= "gouraud", cmap="viridis")
+function visScalarField(domain::Domain, state::Array{Float64, 1}; savefile = nothing, shading= "gouraud", cmap="viridis")
     
     nodes = domain.nodes
     porder = domain.elements[1].porder
@@ -460,6 +542,9 @@ function visScalarField(domain::Domain, state::Array{Float64, 1}; shading= "gour
 
     PyPlot.tripcolor(nodes[:, 1], nodes[:, 2], (vcat(trieles...) .- 1), state, shading = shading, cmap = cmap)
     PyPlot.colorbar()
+    if savefile !== nothing
+        PyPlot.savefig(savefile)
+    end
     
     
 end

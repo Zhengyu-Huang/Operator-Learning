@@ -38,13 +38,13 @@ function Helmhotz_test(geometry::String = "box", nex::Int64 = 20, ney::Int64 = 2
     
     ===============For Ring geometry
     
-    ****2****
-    *           * 
+        ****2****
+      *           * 
     *    *  *  *    * 
     *    *  1  *    * 
     *    *  *  *   *
-    *           *
-    *********
+      *           *
+        *********
     inner   N = -(x, y)/sqrt(x^2 + y^2)
     outter  N = (x, y)/sqrt(x^2 + y^2)
     
@@ -74,6 +74,17 @@ function Helmhotz_test(geometry::String = "box", nex::Int64 = 20, ney::Int64 = 2
         
         r, R = 1.0, 2.0
         nodes, elnodes, bc_nodes = ring(r, R, nex, ney, porder)
+    elseif geometry == "lshape"
+        bc_types = ["Dirichlet", "Dirichlet", "Dirichlet", "Neumann", "Neumann", "Neumann"]
+        bc_funcs = [(x,y)-> sin(π*x)sin(π*y)/(-2π^2) + x + y,
+                    (x,y)-> sin(π*x)sin(π*y)/(-2π^2) + x + y,
+                    (x,y)-> sin(π*x)sin(π*y)/(-2π^2) + x + y,
+                    (x,y)-> (cos(π*x)sin(π*y)/(-2π) + 1),
+                    (x,y)-> ((sin(π*x)cos(π*y)/(-2π))+1),
+                    (x,y)-> -(cos(π*x)sin(π*y)/(-2π) + 1)]
+        
+        Lx, Ly = 1.0, 1.0
+        nodes, elnodes, bc_nodes = lshape(Lx, Ly, nex, ney, porder)
     else
         error("unrecognized geometry: ", geometry)
     end
@@ -101,7 +112,7 @@ function main()
     level_n = 3
     errors = zeros(Float64, level_n)
     ngp = 3
-    for geometry in ("box", "ring",)
+    for geometry in ("box", "ring", "lshape")
         for porder = 1:2
             for level_id in 1:level_n
                 nex, ney = base_n*2^level_id, 2*base_n*2^level_id

@@ -178,7 +178,6 @@ function compute∂u∂n(elem::Quad, edge_id::Int64, u::Array{Float64, 1})
     for k = 1:porder+1
         
         ξ = ξ_coords[loc_node_ids[k], :]
-        # println(ξ)
         if porder == 1
             sData = getShapeQuad4(ξ)
         elseif porder == 2
@@ -188,23 +187,24 @@ function compute∂u∂n(elem::Quad, edge_id::Int64, u::Array{Float64, 1})
         end
         #(∂u/∂x, ∂u/∂y) = (∂u/∂ξ1, ∂u/∂ξ2) [∂(x,y)/∂(ξ1,ξ2)]⁻¹
         dhdx = sData[:,2:end]
+
         jac = coords' * dhdx
 
-        # tagent = (edge_id == 1 || edge_id == 3 ? jac[1, :] : jac[2, :])
+        # ∂(x,y)/∂(ξ1,ξ2) = [∂x/∂ξ1 ∂x/∂ξ2;
+        #                    ∂y/∂ξ1 ∂y/∂ξ2 ]
         if edge_id == 1
-            tangent = jac[1, :]
+            tangent = jac[:, 1]
         elseif edge_id == 2
-            tangent = jac[2, :]
+            tangent = jac[:, 2]
         elseif edge_id == 3
-            tangent = -jac[1, :]
+            tangent = -jac[:, 1]
         elseif edge_id == 4
-            tangent = -jac[2, :]
+            tangent = -jac[:, 2]
         else
             error("local edge id is ", edge_id)
         end
 
         unit_normal = [tangent[2] ; -tangent[1]]/sqrt(tangent[1]^2 + tangent[2]^2)
-
         ∂u∂n_ele[k] = u' * dhdx / jac * unit_normal
     end
 

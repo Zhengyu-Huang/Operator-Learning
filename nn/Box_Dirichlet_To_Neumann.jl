@@ -40,7 +40,7 @@ function D2N(xi::Array{Float64, 1}, c::Float64, nex::Int64 = 20, ney::Int64 = 20
     bc_funcs = [(x,y)->0, (x,y)->0, (x,y)->f(x), (x,y)->0]
     ω = 1000.0
     c_func = (x,y)-> c
-    s_func = (x,y)-> 0 
+    s_func = (x,y)-> 0
     
     Lx, Ly = 1.0, 1.0
     nodes, elnodes, bc_nodes = box(Lx, Ly, nex, ney, porder)

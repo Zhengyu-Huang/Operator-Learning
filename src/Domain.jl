@@ -420,6 +420,42 @@ function computeNeumannOnDirichletNode(domain::Domain, DBC_∂u∂n_ele::Array{F
     return ∂u∂n_data[:,:,1]
 end
 
+
+
+@doc """
+computeDirichletOnNeumannNode(domain::Domain, bc_nodes::Array{Bool, 2}, bc_types::Array{String, 1})
+    
+
+Compute the equivalent Dirichlet boundary condition on Neumann Nodes
+
+The results are an array of size : number_of_boundaries × number_of_nodes 
+u_data[bc_id, node_id] =  the corresponding state value
+at the node on the boundary
+
+If the boundary condition is not Dirichlet or the node is not on this boundary, the value is 0
+
+"""
+function computeDirichletOnNeumannNode(domain::Domain, bc_nodes::Array{Bool, 2}, bc_types::Array{String, 1})
+    elements = domain.elements
+    nnodes = domain.nnodes
+
+    state = domain.state
+    nbcs = length(bc_types)
+    u_data = zeros(nbcs, nnodes)  # ∂u∂n, weights
+
+    for bc_id = 1:nbcs
+        if bc_types[bc_id] != "Neumann"
+            continue
+        end
+        for n_id = 1:nnodes
+            if bc_nodes[n_id, bc_id]
+                u_data[bc_id, n_id] = state[n_id]
+            end
+        end
+    end
+
+    return u_data
+end
 @doc """
     getCoords(domain::Domain, el_nodes::Array{Int64})
 Get the coordinates of several nodes (possibly in one element)

@@ -64,7 +64,7 @@ function N2D(x0::Float64, d0::Float64, c_func::Function, nex::Int64 = 20, ney::I
     
     u_data = computeDirichletOnNeumannNode(domain, bc_nodes, bc_types)
     
-    output_data = zeros(nex*porder+1, 2, 4) # 4 edges, nodal positions, (x, ∂u∂n) 
+    data = zeros(nex*porder+1, 3, 4) # nodal positions, (x, ∂u∂n, u), 4 edges
     for bc_id = 1:4
         bc_id_nodes = bc_nodes[:, bc_id]
         xx, yy = nodes[bc_id_nodes, 1], nodes[bc_id_nodes, 2]
@@ -72,17 +72,20 @@ function N2D(x0::Float64, d0::Float64, c_func::Function, nex::Int64 = 20, ney::I
         data_Dirichlet = u_data[bc_id, bc_id_nodes]
 
    
-        output_data[:, 1, bc_id] .= (bc_id == 1 || bc_id == 3) ? xx : yy
-        output_data[:, 2, bc_id] .= data_Dirichlet
+        data[:, 1, bc_id] .= (bc_id == 1 || bc_id == 3) ? xx : yy
+        if bc_id == 3
+            data[:, 2, bc_id] .= bump_func(data[:, 1, bc_id], ones(Float64, size(data[:, 1, bc_id])), x0, d0)
+        end
+        data[:, 3, bc_id] .= data_Dirichlet
         # sort the data
-        output_data[:, :, bc_id] .= output_data[sortperm(output_data[:, 1, bc_id]), :, bc_id]
+        data[:, :, bc_id] .= data[sortperm(data[:, 1, bc_id]), :, bc_id]
     end 
 
-    return output_data
+    return data
 end
 
 
-function Generate_Output(cs::Array{Float64,1}, x0d0s::Array{Float64, 2}, ne::Int64, porder::Int64)
+function Generate_Input_Output(cs::Array{Float64,1}, x0d0s::Array{Float64, 2}, ne::Int64, porder::Int64)
     # domain discretization set-up
     Lx, Ly = 1.0, 1.0   # box edge lengths
     nex, ney = ne, ne   # grid size
@@ -91,7 +94,7 @@ function Generate_Output(cs::Array{Float64,1}, x0d0s::Array{Float64, 2}, ne::Int
     # number of Dirichlet boundary edges
     n_dbcs = 4
     n_points = nex*porder + 1
-    output_data_all = zeros(Float64, n_points, length(cs)*size(x0d0s, 1),   n_dbcs)
+    data_all = zeros(Float64, n_points,  3, n_dbcs, length(cs)*size(x0d0s, 1)) # nodal positions, (x, ∂u∂n, u), 4 edges, experiment number
     # generate data
 
     
@@ -101,15 +104,15 @@ function Generate_Output(cs::Array{Float64,1}, x0d0s::Array{Float64, 2}, ne::Int
         for l = 1:size(x0d0s, 1)
             x0, d0 = x0d0s[l, :]
             
-            output_data = N2D(x0, d0, (x,y)->c, nex, ney, porder; visualize = (l == 1))
+            data = N2D(x0, d0, (x,y)->c, nex, ney, porder; visualize = (l == 1))
             for i = 1:n_dbcs
                 
-                output_data_all[:, (ind_c - 1)*N_l + l, i] = output_data[:, 2, i]
+                data_all[:,  :,  :, (ind_c - 1)*N_l + l] .= data
             end
         end
     end
 
-    return output_data_all
+    return data_all
 end
 
 

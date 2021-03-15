@@ -127,4 +127,4 @@ function Data_Generate(generate_method::String, data_type::String, N_θ::Int64, 
 end
 
 
-Data_Generate("Uniform", "Direct", 10, 0; ne = 10,   seed = 123)
+Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)

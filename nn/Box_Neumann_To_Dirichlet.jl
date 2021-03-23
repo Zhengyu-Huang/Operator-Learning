@@ -234,6 +234,7 @@ function Generate_Input_Output(func_cs, ne::Int64, porder::Int64)
         
         for l = 1:n_points
             data = N2D(l - 1, func_c, nex, ney, porder; visualize = (l == 1))
+            data = N2D(l - 1, func_c, nex, ney, porder; visualize = false)
             for i = 1:n_dbcs
                 
                 data_all[:,  :,  :, (ind_c - 1)*n_points + l] .= data

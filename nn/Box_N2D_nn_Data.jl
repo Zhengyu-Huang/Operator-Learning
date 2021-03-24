@@ -57,7 +57,7 @@ They can be sorted, where the eigenvalues λ_{l} are in descending order
 
 generate_θ_KL function generates the summation of the first N_KL terms 
 =#
-function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Float64, 2}, d::Float64=2.0, τ::Float64=3.0) 
+function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}, d::Float64=2.0, τ::Float64=3.0) 
     
     N_KL = length(θ)
     
@@ -86,7 +86,7 @@ end
 
 
 
-function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_per_θ::Int64; 
+function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_θ::Int64; 
     ne::Int64 = 100,   seed::Int64=123)
     @assert(generate_method == "Uniform" || generate_method == "Random")
     @assert(data_type == "Direct" || generate_method == "Indirect")
@@ -117,7 +117,31 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         
         npzwrite("uniform_direct_theta.npy", θ)
         npzwrite("uniform_direct_K.npy", κ)
+
+    elseif generate_method == "Random" && data_type == "Direct"
+        N_θ = 8
+        θ = rand(Normal(0, 1.0), N_data, N_θ);
+        κ = zeros(ne+1, ne+1, N_data)
+
+        seq_pairs = compute_seq_pairs(N_θ)
+        for i = 1:N_data
+            cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs);]
+
+            # generate Dirichlet to Neumman results output for different condInt64ions
+            # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
+            data = Generate_Input_Output(cs, ne, porder);
+            
+            # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
+            bc_id = 3
+            u_n = data[:, 2, bc_id, :]
+            u_d = data[:, 3, bc_id, :]
+            K = u_d/u_n
+            κ[:, :, i] = K ./ K_scale' 
+        end 
         
+        npzwrite("random_direct_theta.npy", θ)
+        npzwrite("random_direct_K.npy", κ)
+
     else 
         @info "generate_method: $(generate_method) and data_type == $(data_type) have not implemented yet"
     end
@@ -126,5 +150,8 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
     
 end
 
+# Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 123)
 
 Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)
+
+

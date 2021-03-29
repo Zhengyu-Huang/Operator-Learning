@@ -86,7 +86,7 @@ end
 
 
 
-function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_θ::Int64; 
+function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_θ::Int64; prefix::String="",
     ne::Int64 = 100,   seed::Int64=123)
     @assert(generate_method == "Uniform" || generate_method == "Random")
     @assert(data_type == "Direct" || generate_method == "Indirect")
@@ -115,8 +115,8 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
             κ[:, :, i] = K ./ K_scale' 
         end 
         
-        npzwrite("uniform_direct_theta.npy", θ)
-        npzwrite("uniform_direct_K.npy", κ)
+        npzwrite(prefix*"uniform_direct_theta.npy", θ)
+        npzwrite(prefix*"uniform_direct_K.npy", κ)
 
     elseif generate_method == "Random" && data_type == "Direct"
         N_θ = 8
@@ -139,8 +139,8 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
             κ[:, :, i] = K ./ K_scale' 
         end 
         
-        npzwrite("random_direct_theta.npy", θ)
-        npzwrite("random_direct_K.npy", κ)
+        npzwrite(prefix*"random_direct_theta.npy", θ)
+        npzwrite(prefix*"random_direct_K.npy", κ)
 
     else 
         @info "generate_method: $(generate_method) and data_type == $(data_type) have not implemented yet"
@@ -152,6 +152,6 @@ end
 
 # Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 123)
 
-Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)
+# Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)
 
-
+Data_Generate("Uniform", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)

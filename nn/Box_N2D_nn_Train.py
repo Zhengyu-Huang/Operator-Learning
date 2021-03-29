@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import math
-import py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -58,7 +57,7 @@ assert(N_x == N_y)
 Δx = L/(N_x - 1)
 
 # todo set number of training data
-N_data = 1
+# N_data = 1
 
 input_train  = np.zeros((N_data * N_x * N_y, (N_θ + 2)), dtype=np.float32) # θ, x, y
 output_train = np.zeros((N_data * N_x * N_y), dtype=np.float32)
@@ -130,8 +129,9 @@ for epoch in range(n_epochs):
         
     if epoch % 100 == 0:
         print("[{}/{}], loss: {}".format(epoch, n_epochs, np.round(loss.item(), 3)))
+        torch.save(model, "DirectKernelNet.model")
 
-
+	
 # save the model
 torch.save(model, "DirectKernelNet.model")
 

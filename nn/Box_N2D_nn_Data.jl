@@ -79,7 +79,7 @@ function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pair
         
     end
     
-    c = 50 + exp(a)
+    c = 50 + 10*exp(a)
     
     return c
 end
@@ -124,7 +124,8 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         κ = zeros(ne+1, ne+1, N_data)
 
         seq_pairs = compute_seq_pairs(N_θ)
-        for i = 1:N_data
+        Threads.@threads for i = 1:N_data
+            @info "i = ", i
             cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs);]
 
             # generate Dirichlet to Neumman results output for different condInt64ions
@@ -150,8 +151,10 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
     
 end
 
-# Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 123)
+Data_Generate("Random", "Direct", 1000, 0; ne = 100,   seed = 123)
 
 # Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)
 
-Data_Generate("Uniform", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)
+# Data_Generate("Uniform", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)
+
+# Data_Generate("Random", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)

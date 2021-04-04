@@ -102,7 +102,7 @@ function Generate_Input_Output(func_cs, x0d0s::Array{Float64, 2}, ne::Int64, por
         for l = 1:size(x0d0s, 1)
             x0, d0 = x0d0s[l, :]
             
-            data = N2D(x0, d0, func_c, nex, ney, porder; visualize = (l == 1))
+            data = N2D(x0, d0, func_c, nex, ney, porder; visualize = false)
             for i = 1:n_dbcs
                 
                 data_all[:,  :,  :, (ind_c - 1)*N_l + l] .= data
@@ -233,7 +233,7 @@ function Generate_Input_Output(func_cs, ne::Int64, porder::Int64)
         func_c = func_cs[ind_c]
         
         for l = 1:n_points
-            data = N2D(l - 1, func_c, nex, ney, porder; visualize = (l == 1))
+            # data = N2D(l - 1, func_c, nex, ney, porder; visualize = (l == 1))
             data = N2D(l - 1, func_c, nex, ney, porder; visualize = false)
             for i = 1:n_dbcs
                 

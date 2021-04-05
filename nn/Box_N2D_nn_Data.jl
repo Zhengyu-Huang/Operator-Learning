@@ -1,7 +1,6 @@
 using Random, Distributions, NPZ
 include("Box_Neumann_To_Dirichlet.jl")
 
-
 function c_func_uniform(θ::Float64) 
     
     c = 50 + θ 
@@ -21,13 +20,14 @@ function compute_seq_pairs(N_KL::Int64)
     seq_pairs = zeros(Int64, N_KL, 2)
     trunc_Nx = trunc(Int64, sqrt(2*N_KL)) + 1
     
-    seq_pairs = zeros(Int64, (trunc_Nx+1)^2 - 1, 2)
-    seq_pairs_mag = zeros(Int64, (trunc_Nx+1)^2 - 1)
+    include_00 = false
+    seq_pairs = zeros(Int64, (trunc_Nx+1)^2 - 1 + include_00, 2)
+    seq_pairs_mag = zeros(Int64, (trunc_Nx+1)^2 - 1 + include_00)
     
     seq_pairs_i = 0
     for i = 0:trunc_Nx
         for j = 0:trunc_Nx
-            if (i == 0 && j ==0)
+            if (i == 0 && j ==0 && ~include_00)
                 continue
             end
             seq_pairs_i += 1
@@ -67,21 +67,55 @@ function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pair
         λ = (pi^2*(seq_pairs[i, 1]^2 + seq_pairs[i, 2]^2) + τ^2)^(-d)
         
         if (seq_pairs[i, 1] == 0 && seq_pairs[i, 2] == 0)
-            a += θ[i] * λ
+            a += θ[i] * sqrt(λ)
         elseif (seq_pairs[i, 1] == 0)
-            a += θ[i] * λ * sqrt(2)*cos.(pi * (seq_pairs[i, 2]*x2))
+            a += θ[i] * sqrt(λ) * sqrt(2)*cos.(pi * (seq_pairs[i, 2]*x2))
         elseif (seq_pairs[i, 2] == 0)
-            a += θ[i] * λ * sqrt(2)*cos.(pi * (seq_pairs[i, 1]*x1))
+            a += θ[i] * sqrt(λ) * sqrt(2)*cos.(pi * (seq_pairs[i, 1]*x1))
         else
-            a += θ[i] * λ * 2*cos.(pi * (seq_pairs[i, 1]*x1)) .*  cos.(pi * (seq_pairs[i, 2]*x2))
+            a += θ[i] * sqrt(λ) * 2*cos.(pi * (seq_pairs[i, 1]*x1)) .*  cos.(pi * (seq_pairs[i, 2]*x2))
         end
 
         
     end
-    
-    c = 50 + 10*exp(a)
+       
+    c = 80 + 80exp(a)
     
     return c
+end
+
+
+function compute_loga_field(xx::Array{Float64,1}, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}, d::Float64=2.0, τ::Float64=3.0)
+    N = length(xx)
+    X,Y = repeat(xx, 1, N), repeat(xx, 1, N)'
+    
+    N_KL = length(θ)
+    φ = zeros(Float64, N_KL, N, N)
+    λ = zeros(Float64, N_KL)
+    
+    
+    for i = 1:N_KL
+        if (seq_pairs[i, 1] == 0 && seq_pairs[i, 2] == 0)
+            φ[i, :, :] .= 1.0
+        elseif (seq_pairs[i, 1] == 0)
+            φ[i, :, :] = sqrt(2)*cos.(pi * (seq_pairs[i, 2]*Y))
+        elseif (seq_pairs[i, 2] == 0)
+            φ[i, :, :] = sqrt(2)*cos.(pi * (seq_pairs[i, 1]*X))
+        else
+            φ[i, :, :] = 2*cos.(pi * (seq_pairs[i, 1]*X)) .*  cos.(pi * (seq_pairs[i, 2]*Y))
+        end
+
+        λ[i] = (pi^2*(seq_pairs[i, 1]^2 + seq_pairs[i, 2]^2) + τ^2)^(-d)
+    end
+    
+
+    loga_2d = zeros(Float64, N, N)
+    for i = 1:N_KL
+        loga_2d .+= θ[i]*sqrt(λ[i])*φ[i, :, :]
+    end
+    
+    return loga_2d
+    
 end
 
 
@@ -147,9 +181,12 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         @info "generate_method: $(generate_method) and data_type == $(data_type) have not implemented yet"
     end
     
+    return θ, κ
     
     
 end
+
+
 
 Data_Generate("Random", "Direct", 1000, 0; ne = 100,   seed = 123)
 

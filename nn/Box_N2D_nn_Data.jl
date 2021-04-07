@@ -3,7 +3,7 @@ include("Box_Neumann_To_Dirichlet.jl")
 
 function c_func_uniform(θ::Float64) 
     
-    c = 50 + θ 
+    c = 80 + θ 
     
     return c
 end
@@ -133,9 +133,10 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
 
     if generate_method == "Uniform" && data_type == "Direct"
         N_θ = 1
-        θ = rand(Uniform(0, 50), N_data, N_θ);
+        θ = Array(LinRange(0, 20, N_data));
         κ = zeros(ne+1, ne+1, N_data)
         for i = 1:N_data
+	    @info "θ = ", θ[i]
             cs = [(x,y)->c_func_uniform(θ[i]);]
             # generate Dirichlet to Neumman results output for different condInt64ions
             # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
@@ -158,7 +159,7 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         κ = zeros(ne+1, ne+1, N_data)
 
         seq_pairs = compute_seq_pairs(N_θ)
-        Threads.@threads for i = 1:N_data
+        for i = 1:N_data
             @info "i = ", i
             cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs);]
 
@@ -174,8 +175,8 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
             κ[:, :, i] = K ./ K_scale' 
         end 
         
-        npzwrite(prefix*"random_direct_theta.npy", θ)
-        npzwrite(prefix*"random_direct_K.npy", κ)
+        npzwrite(prefix*"random_direct_theta.$(seed).npy", θ)
+        npzwrite(prefix*"random_direct_K.$(seed).npy", κ)
 
     else 
         @info "generate_method: $(generate_method) and data_type == $(data_type) have not implemented yet"
@@ -188,9 +189,12 @@ end
 
 
 
-Data_Generate("Random", "Direct", 1000, 0; ne = 100,   seed = 123)
+#Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 16)
+#Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 61)
+#Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 31)
+#Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 51)
 
-# Data_Generate("Uniform", "Direct", 100, 0; ne = 100,   seed = 123)
+Data_Generate("Uniform", "Direct", 201, 0; ne = 100,   seed = 123)
 
 # Data_Generate("Uniform", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)
 

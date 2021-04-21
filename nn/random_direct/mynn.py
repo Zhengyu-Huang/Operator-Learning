@@ -31,6 +31,30 @@ class DirectKernelNet(nn.Module):
         return x
 
 
+# A neural network with u_n， θ_c
+# u_d = K(θ_c) u_n
+# u_d(x) = \int K(x, y, θ_c) u_n(y) dy
+class DirectKernelRomNet(nn.Module):
+
+    def __init__(self, N_θ, N_y):
+        super(DirectKernelRomNet, self).__init__()
+        self.N_θ = N_θ
+        # an affine operation: y = Wx + b
+        
+        self.fc1 = nn.Linear(N_θ, 50)
+        self.fc2 = nn.Linear(50, 50)
+        self.fc3 = nn.Linear(50, 50)
+        self.fc4 = nn.Linear(50, 50)
+        self.fc5 = nn.Linear(50, N_y)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
+        x = self.fc5(x)
+        return x
+
 # preprocess the training data 
 
 class DirectData(Dataset):
@@ -64,38 +88,35 @@ def preprocess_data(seeds = []):
         κ = np.concatenate(κs, axis = 2)
 
 
-    N_data, N_θ =  θ.shape
+    # N_data, N_θ =  θ.shape
+    # N_x, N_y, N_data = κ.shape
+    return θ, κ
+
+def build_bases(κ, N_trunc=-1, acc=0.9999):
+
     N_x, N_y, N_data = κ.shape
 
+    data = κ.reshape((-1, N_data))
 
-    input_train  = np.zeros((N_data * N_x * N_y, (N_θ + 2)), dtype=np.float32) # θ, x, y
-    output_train = np.zeros((N_data * N_x * N_y), dtype=np.float32)
-
-
-    L = 1.0
-    assert(N_x == N_y)
-    Δx = L/(N_x - 1)
-    xx = np.linspace(0, L, N_x)
-    Y, X = np.meshgrid(xx, xx)
-
-    # test
-    i = 20
-    j = 40
-    assert(X[i, j] == i*Δx and Y[i, j] == j*Δx)
-
-
-
-    for i in range(N_data):
-        d_range = range(i*N_x*N_y, (i + 1)*N_x*N_y)
-        input_train[d_range , 0:N_θ] = θ[i]
-        input_train[d_range , N_θ] = X.reshape(-1)
-        input_train[d_range , N_θ + 1] = Y.reshape(-1)
-        output_train[d_range] = κ[:, :, i].reshape(-1)
+    # svd bases
+    u, s, vh = np.linalg.svd(np.transpose(data))
     
+    if N_trunc < 0:
+        s_sum_tot = sum(s)
+        s_sum = 0.0
+        for i in range(N_data):
+            s_sum += s[i]
+            if s_sum > acc*s_sum_tot:
+                break
+        N_trunc = i+1
+    print("N_trunc = ", N_trunc)
 
-    # input out put data only choose x <= y
-    input_bool = (input_train[:, N_θ] <= input_train[:, N_θ+1] + Δx/2)
-    input_train = input_train[input_bool, :]
-    output_train = output_train[input_bool]
 
-    return input_train, output_train
+
+    scale = np.average(s[:N_trunc])
+    data_svd = u[:, 0:N_trunc] * s[:N_trunc]/scale
+    bases = vh[0:N_trunc, :]*scale
+
+    return data_svd, bases, N_trunc
+
+

@@ -58,7 +58,7 @@ They can be sorted, where the eigenvalues λ_{l} are in descending order
 
 generate_θ_KL function generates the summation of the first N_KL terms 
 =#
-function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}, c_min::Flot64, Δc::Float64, d::Float64=2.0, τ::Float64=3.0) 
+function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}, c_min::Float64, Δc::Float64, d::Float64=2.0, τ::Float64=3.0) 
     
     N_KL = length(θ)
     
@@ -200,7 +200,7 @@ end
 #Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 31)
 #Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 51)
 
-Data_Generate("Uniform", "Direct", 501, 0; ne = 100,   seed = 123)
+# Data_Generate("Uniform", "Direct", 501, 0; ne = 100,   seed = 123)
 
 # Data_Generate("Uniform", "Direct", 10, 0; prefix = "test_", ne = 100,   seed = 42)
 

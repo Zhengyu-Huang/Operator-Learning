@@ -81,8 +81,9 @@ function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pair
     end
        
     # c = 275 .+ 25*a
-
+    
     c = c_min .+ Δc*(a > 0.0)
+
     
     return c
 end
@@ -161,11 +162,11 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         θ = rand(Normal(0, 1.0), N_data, N_θ);
         κ = zeros(ne+1, ne+1, N_data)
 	
-	cmin, Δc = 250.0, 50.0
+	    cmin, Δc = 250.0, 50.0
         seq_pairs = compute_seq_pairs(N_θ)
         Threads.@threads for i = 1:N_data
             @info "i = ", i
-            cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs), cmin, Δc;]
+            cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs, cmin, Δc)]
 
             # generate Dirichlet to Neumman results output for different condInt64ions
             # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]

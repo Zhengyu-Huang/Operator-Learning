@@ -123,8 +123,7 @@ end
 
 
 
-function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_θ::Int64; prefix::String="",
-    ne::Int64 = 100,   seed::Int64=123)
+function Data_Generate(generate_method::String, data_type::String, N_data::Int64, N_θ::Int64; prefix::String="", ne::Int64 = 100,   seed::Int64=123)
     @assert(generate_method == "Uniform" || generate_method == "Random")
     @assert(data_type == "Direct" || generate_method == "Indirect")
     
@@ -161,11 +160,12 @@ function Data_Generate(generate_method::String, data_type::String, N_data::Int64
         N_θ = 8
         θ = rand(Normal(0, 1.0), N_data, N_θ);
         κ = zeros(ne+1, ne+1, N_data)
-
+	
+	cmin, Δc = 250.0, 50.0
         seq_pairs = compute_seq_pairs(N_θ)
         Threads.@threads for i = 1:N_data
             @info "i = ", i
-            cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs);]
+            cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs), cmin, Δc;]
 
             # generate Dirichlet to Neumman results output for different condInt64ions
             # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
@@ -198,7 +198,7 @@ end
 #Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 16)
 #Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 61)
 #Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 31)
-#Data_Generate("Random", "Direct", 100, 0; ne = 100,   seed = 51)
+Data_Generate("Random", "Direct", 1000, 0; ne = 100)
 
 # Data_Generate("Uniform", "Direct", 501, 0; ne = 100,   seed = 123)
 

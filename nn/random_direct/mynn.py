@@ -70,19 +70,19 @@ class DirectData(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-def preprocess_data(seeds = []):
+def preprocess_data(prefix="", seeds = []):
     # concatenate data
     θs, κs = [], []
 
     if not seeds:
-        θ = np.load("random_direct_theta.npy")   
-        κ = np.load("random_direct_K.npy")
+        θ = np.load(prefix+"random_direct_theta.npy")   
+        κ = np.load(prefix+"random_direct_K.npy")
     else:
         # load data 
         for seed in seeds:
             print("load random_direct_theta."+str(seed)+".npy and random_direct_K."+str(seed)+".npy")
-            θs.append(np.load("random_direct_theta."+str(seed)+".npy"))
-            κs.append(np.load("random_direct_K."+str(seed)+".npy"))
+            θs.append(np.load(prefix+"random_direct_theta."+str(seed)+".npy"))
+            κs.append(np.load(prefix+"random_direct_K."+str(seed)+".npy"))
 
         θ = np.concatenate(θs, axis = 0)   
         κ = np.concatenate(κs, axis = 2)

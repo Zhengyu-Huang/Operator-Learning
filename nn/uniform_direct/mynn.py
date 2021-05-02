@@ -34,20 +34,39 @@ class DirectKernelNet(nn.Module):
 # A neural network with u_n， θ_c
 # u_d = K(θ_c) u_n
 # u_d(x) = \int K(x, y, θ_c) u_n(y) dy
+# class DirectKernelRomNet(nn.Module):
+
+#     def __init__(self, N_θ, N_y):
+#         super(DirectKernelRomNet, self).__init__()
+#         self.N_θ = N_θ
+#         # an affine operation: y = Wx + b
+        
+#         self.fc1 = nn.Linear(N_θ, 20)
+#         self.fc2 = nn.Linear(20, 20)
+#         self.fc5 = nn.Linear(20, N_y)
+
+#     def forward(self, x):
+#         x = F.relu(self.fc1(x))
+#         x = F.relu(self.fc2(x))
+#         x = self.fc5(x)
+#         return x
+
+
 class DirectKernelRomNet(nn.Module):
 
     def __init__(self, N_θ, N_y):
         super(DirectKernelRomNet, self).__init__()
         self.N_θ = N_θ
         # an affine operation: y = Wx + b
-        
         self.fc1 = nn.Linear(N_θ, 20)
         self.fc2 = nn.Linear(20, 20)
+#         self.fc3 = nn.Linear(50, 20)
         self.fc5 = nn.Linear(20, N_y)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
+#         x = F.relu(self.fc3(x))
         x = self.fc5(x)
         return x
 
@@ -66,19 +85,19 @@ class DirectData(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-def preprocess_data(seeds = []):
+def preprocess_data(prefix="", seeds = []):
     # concatenate data
     θs, κs = [], []
 
     if not seeds:
-        θ = np.load("uniform_direct_theta.npy")   
-        κ = np.load("uniform_direct_K.npy")
+        θ = np.load(prefix+"uniform_direct_theta.npy")   
+        κ = np.load(prefix+"uniform_direct_K.npy")
     else:
         # load data 
         for seed in seeds:
             print("load uniform_direct_theta."+str(seed)+".npy and uniform_direct_K."+str(seed)+".npy")
-            θs.append(np.load("uniform_direct_theta."+str(seed)+".npy"))
-            κs.append(np.load("uniform_direct_K."+str(seed)+".npy"))
+            θs.append(np.load(prefix+"uniform_direct_theta."+str(seed)+".npy"))
+            κs.append(np.load(prefix+"uniform_direct_K."+str(seed)+".npy"))
 
         θ = np.concatenate(θs, axis = 0)   
         κ = np.concatenate(κs, axis = 2)

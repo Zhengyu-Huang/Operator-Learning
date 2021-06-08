@@ -403,7 +403,7 @@ function Data_Generate(generate_method::String, N_data::Int64, N_θ::Int64;
         κ = zeros(ne+1, ne+1, N_data)
 
         seq_pairs = compute_seq_pairs(N_θ)
-        Threads.@threads for i = 1:N_data
+        for i = 1:N_data
             @info "i = ", i
             cs = [(x,y)->c_func_random(x, y, θ[i, :], seq_pairs);]
 

@@ -21,7 +21,7 @@ N_θ = 100
 seq_pairs = Compute_Seq_Pairs(Int64(N_θ/2))
 
 Random.seed!(42);
-N_data = 4
+N_data = 4000
 θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
 mesh = Spectral_Mesh(N, N, L, L)
 ωω = zeros(N,N, N_data)

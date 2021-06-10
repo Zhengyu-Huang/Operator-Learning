@@ -67,20 +67,20 @@ class DirectData(Dataset):
         return self.X[idx], self.y[idx]
 
 
-def build_bases(κ, acc=0.9999, N_trunc=-1):
+def build_bases(K, acc=0.9999, N_trunc=-1):
 
-    N_x, N_y, N_data = κ.shape
+    N_x, N_y, N_data = K.shape
 
-    data = κ.reshape((-1, N_data))
+    data = K.reshape((-1, N_data))
 
     # svd bases
     u, s, vh = np.linalg.svd(np.transpose(data))
     
     if N_trunc < 0:
-        s_sum_tot = sum(s)
+        s_sum_tot = np.dot(s, s)
         s_sum = 0.0
         for i in range(N_data):
-            s_sum += s[i]
+            s_sum += s[i]**2
             if s_sum > acc*s_sum_tot:
                 break
         N_trunc = i+1

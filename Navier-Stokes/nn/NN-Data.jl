@@ -70,6 +70,8 @@ for i_d = 1:N_data
             PyPlot.title("ω")
         end
     end
+    
+    Update_Grid_Vars!(solver)
     ωω[:, : , i_d] .= solver.ω
 end
 

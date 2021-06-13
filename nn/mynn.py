@@ -33,7 +33,7 @@ class DirectNet_20(nn.Module):
 class DirectNet_50(nn.Module):
 
     def __init__(self, N_in, N_out):
-        super(DirectNet_20, self).__init__()
+        super(DirectNet_50, self).__init__()
         # an affine operation: y = Wx + b
         
         self.fc1 = nn.Linear(N_in, 50)

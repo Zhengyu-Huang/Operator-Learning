@@ -7,7 +7,7 @@ include("../src/Spectral-Navier-Stokes.jl");
 
 
 ν = 1.0/40                                      # viscosity
-N, L = 128, 2*pi                                 # resolution and domain size 
+N, L = 64, 2*pi                                 # resolution and domain size 
 ub, vb = 0.0, 0.0                               # background velocity 
 method="Crank-Nicolson"                         # RK4 or Crank-Nicolson
 N_t = 5000;                                     # time step
@@ -22,12 +22,12 @@ seq_pairs = Compute_Seq_Pairs(Int64(N_θ/2))
 
 Random.seed!(42);
 N_data = 4000
-θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
+# θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
+θθ = rand(Normal(0,1), N_data, N_θ)
 mesh = Spectral_Mesh(N, N, L, L)
 ωω = zeros(N,N, N_data)
 
 for i_d = 1:N_data
-    @info "data ", i_d, " / ", N_data
     θ = θθ[i_d, :]
     
     # this is used for generating random initial condition
@@ -64,7 +64,7 @@ for i_d = 1:N_data
 
 
     Δt = T/N_t 
-    Threads.@threads for i = 1:N_t
+    for i = 1:N_t
         Solve!(solver, Δt, method)
         if plot_data && i == N_t
             PyPlot.figure(figsize = (4,3))
@@ -79,6 +79,7 @@ for i_d = 1:N_data
     end
     
     Update_Grid_Vars!(solver)
+    @info "data ", i_d, " / ", N_data, " norm : ", norm(solver.ω)
     ωω[:, : , i_d] .= solver.ω
 end
 

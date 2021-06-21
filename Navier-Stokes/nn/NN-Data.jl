@@ -36,7 +36,8 @@ for i_d = 1:N_data
         method, N_t,
         obs_ΔNx, obs_ΔNy, obs_ΔNt, 
         0,
-        100;)
+        100;
+        f = (x, y) -> (sin(4*y), 0))
 
 
     ω0_ref = s_param.ω0_ref
@@ -44,8 +45,14 @@ for i_d = 1:N_data
     solver = Spectral_NS_Solver(mesh, ν; fx = s_param.fx, fy = s_param.fy, ω0 = ω0_ref, ub = ub, vb = vb)  
     # The forcing fx and fy are set to be zero, they are only used for pressure computation
     # We specify the curl_f_hat directely (do not compute pressure)
-    curl_f = Initial_ω0_KL(mesh, θ, seq_pairs)
-    Trans_Grid_To_Spectral!(mesh, curl_f,  solver.curl_f_hat)
+
+    #     curl_f = Initial_ω0_KL(mesh, θ, seq_pairs)
+    #     Trans_Grid_To_Spectral!(mesh, curl_f,  solver.curl_f_hat)
+    
+    curl_f = Initial_ω0_KL(mesh, θ, seq_pairs; τ = 3.0)
+    curl_f_hat = copy(solver.curl_f_hat)
+    Trans_Grid_To_Spectral!(mesh, curl_f,  curl_f_hat)
+    solver.curl_f_hat +=  curl_f_hat
      
     
     if plot_data && i_d == 1
@@ -57,7 +64,7 @@ for i_d = 1:N_data
 
 
     Δt = T/N_t 
-    for i = 1:N_t
+    Threads.@threads for i = 1:N_t
         Solve!(solver, Δt, method)
         if plot_data && i == N_t
             PyPlot.figure(figsize = (4,3))

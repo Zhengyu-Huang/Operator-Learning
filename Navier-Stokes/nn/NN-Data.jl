@@ -7,7 +7,7 @@ include("../src/Spectral-Navier-Stokes.jl");
 
 
 ν = 1.0/40                                      # viscosity
-N, L = 128, 2*pi                                 # resolution and domain size 
+N, L = 64, 2*pi                                 # resolution and domain size 
 ub, vb = 0.0, 0.0                               # background velocity 
 method="Crank-Nicolson"                         # RK4 or Crank-Nicolson
 N_t = 5000;                                     # time step
@@ -22,12 +22,12 @@ seq_pairs = Compute_Seq_Pairs(Int64(N_θ/2))
 
 Random.seed!(42);
 N_data = 4000
-θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
+# θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
+θθ = rand(Normal(0,1), N_data, N_θ)
 mesh = Spectral_Mesh(N, N, L, L)
 ωω = zeros(N,N, N_data)
 
 for i_d = 1:N_data
-    @info "data ", i_d, " / ", N_data
     θ = θθ[i_d, :]
     
     # this is used for generating random initial condition
@@ -36,7 +36,8 @@ for i_d = 1:N_data
         method, N_t,
         obs_ΔNx, obs_ΔNy, obs_ΔNt, 
         0,
-        100;)
+        100;
+        f = (x, y) -> (sin(4*y), 0))
 
 
     ω0_ref = s_param.ω0_ref
@@ -44,8 +45,14 @@ for i_d = 1:N_data
     solver = Spectral_NS_Solver(mesh, ν; fx = s_param.fx, fy = s_param.fy, ω0 = ω0_ref, ub = ub, vb = vb)  
     # The forcing fx and fy are set to be zero, they are only used for pressure computation
     # We specify the curl_f_hat directely (do not compute pressure)
-    curl_f = Initial_ω0_KL(mesh, θ, seq_pairs)
-    Trans_Grid_To_Spectral!(mesh, curl_f,  solver.curl_f_hat)
+
+    #     curl_f = Initial_ω0_KL(mesh, θ, seq_pairs)
+    #     Trans_Grid_To_Spectral!(mesh, curl_f,  solver.curl_f_hat)
+    
+    curl_f = Initial_ω0_KL(mesh, θ, seq_pairs; τ = 3.0)
+    curl_f_hat = copy(solver.curl_f_hat)
+    Trans_Grid_To_Spectral!(mesh, curl_f,  curl_f_hat)
+    solver.curl_f_hat +=  curl_f_hat
      
     
     if plot_data && i_d == 1
@@ -70,6 +77,9 @@ for i_d = 1:N_data
             PyPlot.title("ω")
         end
     end
+    
+    Update_Grid_Vars!(solver)
+    @info "data ", i_d, " / ", N_data, " norm : ", norm(solver.ω)
     ωω[:, : , i_d] .= solver.ω
 end
 

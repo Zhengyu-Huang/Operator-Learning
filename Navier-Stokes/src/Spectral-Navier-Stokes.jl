@@ -458,7 +458,7 @@ end
 # with (kx + ky > 0 || (kx + ky == 0 && kx > 0)) 
 # θ = [ak;bk]
 # ω0 = ∑_k ak cos(k⋅x)/√2π|k|^2 + bk sin(k⋅x)/√π|k|^2
-function Initial_ω0_KL(mesh::Spectral_Mesh, θ::Array{Float64,1}, seq_pairs::Array{Int64,2})
+function Initial_ω0_KL(mesh::Spectral_Mesh, θ::Array{Float64,1}, seq_pairs::Array{Int64,2}; τ = 0.0)
     # consider C = -Δ^{-2}
     # C u = λ u  => -u = λ Δ u
     # u = e^{ik⋅x}, λ Δ^2 u = -λ |k|^4 u = - u => λ = 1/|k|^4
@@ -482,10 +482,10 @@ function Initial_ω0_KL(mesh::Spectral_Mesh, θ::Array{Float64,1}, seq_pairs::Ar
             ix = (kx >= 0 ? kx + 1 : N_x + kx + 1) 
             iy = (ky >= 0 ? ky + 1 : N_y + ky + 1) 
             
-            ω0_hat[ix, iy] = (ak - bk*im)/(2*sqrt(2)*pi*(kx^2+ky^2))
+            ω0_hat[ix, iy] = (ak - bk*im)/(2*sqrt(2)*pi*(kx^2+ky^2+τ^2))
             
             # 1 => 1, i => n-i+2
-            ω0_hat[(ix==1 ? 1 : N_x-ix+2), (iy==1 ? 1 : N_y-iy+2)] = (ak + bk*im)/(2*sqrt(2)*pi*(kx^2+ky^2))
+            ω0_hat[(ix==1 ? 1 : N_x-ix+2), (iy==1 ? 1 : N_y-iy+2)] = (ak + bk*im)/(2*sqrt(2)*pi*(kx^2+ky^2+τ^2))
         end
     end
 

@@ -29,25 +29,31 @@ color3 = 'tab:orange'
 def colnorm(u):
 	return np.sqrt(np.sum(u**2,0))
 
-N = 256
-K = 200
+T = 2
+N = 128
+K = 800
 M = 2048
+data    = np.load('../../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz')
+
+traj = data['traj']
+theta = data['data_theta']
 
 xgrid = np.linspace(0,1,N+1)
 xgrid = xgrid[:-1]
 dx    = xgrid[1] - xgrid[0]
 
 # burgers param and data
-nu      = 0.01
-data    = np.load('../../data/N'+str(N)+'_K'+str(K)+'_M'+str(M)+'.npz')
-inputs  = data["inputs"]
-outputs = data["outputs"]
+# nu      = 0.01
+# data    = np.load('../../data/N'+str(N)+'_K'+str(K)+'_M'+str(M)+'.npz')
 
-train_inputs = inputs[:,:M/2]
-test_inputs  = inputs[:,M/2:]
+inputs  = traj[:,0,:]
+outputs = traj[:,-1,:]
 
-train_outputs = outputs[:,:M/2]
-test_outputs  = outputs[:,M/2:]
+train_inputs = inputs[:,:M//2]
+test_inputs  = inputs[:,M//2:]
+
+train_outputs = outputs[:,:M//2]
+test_outputs  = outputs[:,M//2:]
 
 Ui,Si,Vi = np.linalg.svd(train_inputs)
 en_f= 1 - np.cumsum(Si)/np.sum(Si)
@@ -79,7 +85,7 @@ mean_rel_err_test = np.mean(rel_err_test)
 x_train = torch.from_numpy(f_hat.T.astype(np.float32))
 y_train = torch.from_numpy(g_hat.T.astype(np.float32))
 
-N_neurons = 20
+N_neurons = 50
 
 if N_neurons == 20:
     DirectNet = DirectNet_20

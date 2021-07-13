@@ -6,7 +6,7 @@ from datetime import datetime
 
 import matplotlib as mpl 
 from matplotlib.lines import Line2D 
-mpl.use('TkAgg')
+# mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
@@ -26,75 +26,39 @@ color2 = 'tab:green'
 color3 = 'tab:orange'
 
 
-def colnorm(u):
-	return np.sqrt(np.sum(u**2,0))
-
-# N = 256
-# K = 200
-# M = 2048
-
-# xgrid = np.linspace(0,1,N+1)
-# xgrid = xgrid[:-1]
-# dx    = xgrid[1] - xgrid[0]
-
-# # burgers param and data
-# nu      = 0.01
-# data    = np.load('../../data/N'+str(N)+'_K'+str(K)+'_M'+str(M)+'.npz')
-# inputs  = data["inputs"]
-# outputs = data["outputs"]
-
-T = 2
-N = 128
-K = 800
-M = 2048
-data    = np.load('../../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz')
-
-traj = data['traj']
-theta = data['data_theta']
-inputs  = traj[:,0,:]
-outputs = traj[:,-1,:]
+data    = np.load('../../data/data.npz')
+inputs  = np.concatenate((data["theta"], data["u"][np.newaxis, :]), axis=0)
+r_f, _ = inputs.shape
+outputs = data["aT"]
+a0 = data["a0"]
+N, M = outputs.shape
 
 xgrid = np.linspace(0,1,N+1)
 xgrid = xgrid[:-1]
 dx    = xgrid[1] - xgrid[0]
 
-train_inputs = inputs[:,:M//2]
-test_inputs  = inputs[:,M//2:]
-
-train_outputs = outputs[:,:M//2]
-test_outputs  = outputs[:,M//2:]
-
-Ui,Si,Vi = np.linalg.svd(train_inputs)
-en_f= 1 - np.cumsum(Si)/np.sum(Si)
-Uo,So,Vo = np.linalg.svd(train_outputs)
-en_g = 1 - np.cumsum(So)/np.sum(So)
-
-acc = 0.99
-r_f = np.argwhere(en_f<(1-acc))[0,0]
-r_g = np.argwhere(en_g<(1-acc))[0,0]
-
-Uf = Ui[:,:r_f]
-Ug = Uo[:,:r_g]
-
-# best fit linear operator
-f_hat = np.matmul(Uf.T,train_inputs)
-g_hat = np.matmul(Ug.T,train_outputs)
-temp, res, rnk,s = np.linalg.lstsq(f_hat.T,g_hat.T)
-BFL = temp.T
-
-err_train = np.matmul(BFL,f_hat)-g_hat
-rel_err_train = np.sum(err_train**2,0)/np.sum(g_hat**2,0)
-mean_rel_err_train = np.mean(rel_err_train)
-
-g_hat_test = np.matmul(Ug.T,test_outputs)
-err_test = np.matmul(BFL,np.matmul(Uf.T,test_inputs))-g_hat_test
-rel_err_test = np.sum(err_test**2,0)/np.sum(g_hat_test**2,0)
-mean_rel_err_test = np.mean(rel_err_test)
 
 
-# neural network
-x_train = torch.from_numpy(f_hat.T.astype(np.float32))
-y_train = torch.from_numpy(g_hat.T.astype(np.float32))
+train_inputs = inputs[:,0::2]
+test_inputs  = inputs[:,1::2]
+
+train_outputs = outputs[:,0::2]
+test_outputs  = outputs[:,1::2]
+
+train_a0 = a0[:,0::2]
+test_a0 = a0[:,1::2]
+
+f_hat = train_inputs.T
+fx = np.concatenate((np.repeat(f_hat,N,axis=0), np.tile(xgrid,M//2)[:,np.newaxis]),axis=1)
+gx = np.reshape(train_outputs,((M//2)*N,),order='F')
+
+Ndata = N*(M//2)
+
+# load training indices
+# tr_i = np.load('tr_i.npy')
+
+x_train = torch.from_numpy(fx.astype(np.float32))
+y_train = torch.from_numpy(gx[:,np.newaxis].astype(np.float32))
 
 N_neurons = 50
 
@@ -103,50 +67,40 @@ if N_neurons == 20:
 elif N_neurons == 50:
     DirectNet = DirectNet_50
 
-model = torch.load("PCANet_"+str(N_neurons)+".model")
+model = DirectNet(r_f+1,1)
+model = torch.load("fxNet_"+str(N_neurons)+".model")
 
 loss_fn = torch.nn.MSELoss(reduction='sum')
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
-y_pred_train = model(x_train).detach().numpy().T
+y_pred_train = model(x_train).detach().numpy().flatten()
 
 rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
-    rel_err_nn_train[i] = np.linalg.norm(train_outputs[:, i]  - np.matmul(Ug, y_pred_train[:, i]))/np.linalg.norm(train_outputs[:, i])
+    rel_err_nn_train[i] = np.linalg.norm(y_pred_train[i*N:(i+1)*N] - gx[i*N:(i+1)*N])/np.linalg.norm(gx[i*N:(i+1)*N])
 mre_nn_train = np.mean(rel_err_nn_train)
 
-# rel_err_nn_train = np.sum((y_pred_train-g_hat)**2,0)/np.sum(g_hat**2,0)
-# mre_nn_train = np.mean(rel_err_nn_train)
+############# test
 
-f_hat_test = np.matmul(Uf.T,test_inputs)
-y_pred_test  = model(torch.from_numpy(f_hat_test.T.astype(np.float32))).detach().numpy().T
+f_hat_test = test_inputs.T
+fx_test = np.concatenate((np.repeat(f_hat_test,N,axis=0), np.tile(xgrid,M//2)[:,np.newaxis]),axis=1)
+gx_test = np.reshape(test_outputs,((M//2)*N,),order='F')
+
+# load training indices
+# tr_i = np.load('tr_i.npy')
+
+x_test = torch.from_numpy(fx_test.astype(np.float32))
+y_pred_test = model(x_test).detach().numpy().flatten()
 
 rel_err_nn_test = np.zeros(M//2)
 for i in range(M//2):
-    rel_err_nn_test[i] = np.linalg.norm(test_outputs[:, i]  - np.matmul(Ug, y_pred_test[:, i]))/np.linalg.norm(test_outputs[:, i])
+    rel_err_nn_test[i] = np.linalg.norm(y_pred_test[i*N:(i+1)*N] - gx_test[i*N:(i+1)*N])/np.linalg.norm(gx_test[i*N:(i+1)*N])
 mre_nn_test = np.mean(rel_err_nn_test)
 
-# rel_err_nn_test = np.sum((y_pred_test-g_hat_test)**2,0)/np.sum(g_hat_test**2,0)
-# mre_nn_test = np.mean(rel_err_nn_test)
 print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
-# loss_scale = 1000
-# n_epochs = 500000
-# for epoch in range(n_epochs):
-# 	y_pred = model(x_train)
-# 	loss = loss_fn(y_pred,y_train)*loss_scale
 
-# 	optimizer.zero_grad()
-# 	loss.backward()
-# 	optimizer.step()
-# 	if epoch % 1000 == 0:
-# 		print("[{}/{}], loss: {}, time {}".format(epoch, n_epochs, np.round(loss.item(), 3),datetime.now()))
-# 		torch.save(model, "PCANet_"+str(N_neurons)+".model")
-
-	
-# # save the model
-# torch.save(model, "PCANet_"+str(N_neurons)+".model")
-
+## Error plot
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
 ax.semilogy(rel_err_nn_train,lw=0.5,color=color1,label='training')
@@ -159,12 +113,12 @@ plt.close()
 
 ind = np.argmax(rel_err_nn_test)
 
-
+## worst case plot
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
+ax.plot(xgrid,test_a0[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
 ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
-ax.plot(xgrid,np.matmul(Ug,y_pred_test[:,ind]),lw=0.5,color=color3,label="NN u(T)")
+ax.plot(xgrid,y_pred_test[ind*N:(ind+1)*N],lw=0.5,color=color3,label="NN u(T)")
 ax.legend()
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
@@ -187,9 +141,9 @@ ind = np.argmax(rel_err_nn_train)
 
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,train_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
+ax.plot(xgrid,train_a0[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
 ax.plot(xgrid,train_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
-ax.plot(xgrid,np.matmul(Ug,y_pred_train[:,ind]),lw=0.5,color=color3,label="NN u(T)")
+ax.plot(xgrid,y_pred_train[ind*N:(ind+1)*N],lw=0.5,color=color3,label="NN u(T)")
 ax.legend()
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
@@ -219,3 +173,5 @@ plt.close()
 # plt.ylabel('energy lost')
 # plt.savefig('training_PCA.png',pad_inches=3)
 # plt.close()
+
+

@@ -44,9 +44,9 @@ function generate_KL_basis(N_x::IT, N_KL::IT, N_u::IT, N_a::IT; d::FT=2.0, τ::F
 end
 
 N_x = 100
-N_KL = 50 
+N_KL = 2 
 N_u = 50 
-N_a = 500
+N_a = 50
 θ0s, uTs, a0s, aTs = generate_KL_basis(N_x, N_KL, N_u, N_a;)
 
 

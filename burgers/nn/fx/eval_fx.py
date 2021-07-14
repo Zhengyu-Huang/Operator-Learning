@@ -32,7 +32,7 @@ def colnorm(u):
 T = 2
 N = 128
 K = 800
-M = 2048
+M = 2048*2
 data    = np.load('../../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz')
 
 traj = data['traj']
@@ -71,7 +71,7 @@ Ndata = N*(M//2)
 x_train = torch.from_numpy(fx.astype(np.float32))
 y_train = torch.from_numpy(gx[:,np.newaxis].astype(np.float32))
 
-N_neurons = 50
+N_neurons = 20
 
 if N_neurons == 20:
     DirectNet = DirectNet_20
@@ -86,6 +86,7 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 y_pred_train = model(x_train).detach().numpy().flatten()
+
 
 rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
@@ -111,6 +112,7 @@ mre_nn_test = np.mean(rel_err_nn_test)
 
 print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
 
+'''
 ## Error plot
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
@@ -127,11 +129,11 @@ ind = np.argmax(rel_err_nn_test)
 ## worst case plot
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
-ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
+ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='u(0)')
+ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='u(T)')
 ax.plot(xgrid,y_pred_test[ind*N:(ind+1)*N],lw=0.5,color=color3,label="NN u(T)")
 ax.legend()
-plt.xlabel('$x$')
+plt.xlabel('x')
 plt.ylabel('u(x)')
 plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
 plt.close()
@@ -152,11 +154,11 @@ ind = np.argmax(rel_err_nn_train)
 
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,train_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
-ax.plot(xgrid,train_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
+ax.plot(xgrid,train_inputs[:,ind],'--',lw=0.5,color=color1,label='u(0)')
+ax.plot(xgrid,train_outputs[:,ind],lw=0.5,color=color2,label='u(T)')
 ax.plot(xgrid,y_pred_train[ind*N:(ind+1)*N],lw=0.5,color=color3,label="NN u(T)")
 ax.legend()
-plt.xlabel('$x$')
+plt.xlabel('x')
 plt.ylabel('u(x)')
 plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
 plt.close()
@@ -186,3 +188,4 @@ plt.close()
 # plt.close()
 
 
+'''

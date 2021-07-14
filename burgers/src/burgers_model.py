@@ -1,7 +1,7 @@
 import numpy as np 
 import matplotlib as mpl 
 from matplotlib.lines import Line2D 
-mpl.use('TkAgg')
+# mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import scipy
 import scipy.linalg as sla

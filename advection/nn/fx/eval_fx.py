@@ -10,7 +10,7 @@ from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
-plt.rc("text", usetex=True)         # Crisp axis ticks
+# plt.rc("text", usetex=True)         # Crisp axis ticks
 plt.rc("font", family="serif")      # Crisp axis labels
 plt.rc("legend", edgecolor='none')  # No boxes around legends
 

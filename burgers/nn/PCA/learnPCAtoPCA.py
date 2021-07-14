@@ -6,7 +6,7 @@ from datetime import datetime
 
 import matplotlib as mpl 
 from matplotlib.lines import Line2D 
-mpl.use('TkAgg')
+# mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
@@ -32,7 +32,7 @@ def colnorm(u):
 T = 2
 N = 128
 K = 800
-M = 2048
+M = 2048*2
 data    = np.load('../../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz')
 
 traj = data['traj']
@@ -85,7 +85,7 @@ mean_rel_err_test = np.mean(rel_err_test)
 x_train = torch.from_numpy(f_hat.T.astype(np.float32))
 y_train = torch.from_numpy(g_hat.T.astype(np.float32))
 
-N_neurons = 50
+N_neurons = 20
 
 if N_neurons == 20:
     DirectNet = DirectNet_20

@@ -36,6 +36,21 @@ class DirectData(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
+# A basic implementation, features are put in the front
+# Vs is a M by d vectors, it will help generate 2M additional features
+#    from the first d features
+def EnrichData(X_data, Vs):
+    N_data, N_dim = X_data.shape
+    M, d = Vs.shape
+    N_dim_new = N_dim + 2*M
+    X_data_new = np.zeros((N_data, N_dim_new))
+    X_data_new[:, -N_dim:] =  X_data
+    for i in range(N_data):
+        for j in range(M):
+            X_data_new[i, 2*j]   = np.sin(np.dot(Vs[j, :], X_data[i, 0:d]))
+            X_data_new[i, 2*j+1] = np.cos(np.dot(Vs[j, :], X_data[i, 0:d]))
+    return X_data_new
+    
 def preprocess_PCA(params, data, acc=0.9999, N_trunc=-1):
     # params:  M by Np
     # X:  M by Ny by Nz ....

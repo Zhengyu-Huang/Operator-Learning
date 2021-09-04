@@ -427,3 +427,53 @@ function Data_Generate(generate_method::String, N_data::Int64, N_θ::Int64;
     
     
 end
+
+
+function Generate_κ(θ, seq_pairs, ne, porder, K_scale)
+
+    
+
+    cs = [(x,y)->c_func_random(x, y, θ, seq_pairs);]
+
+    # generate Dirichlet to Neumman results output for different condInt64ions
+    # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
+    data = Generate_Input_Output(cs, ne, porder);
+    
+    # data =[nodal posInt64ions, (x, ∂u∂n, u), 4 edges, experiment number]
+    bc_id = 3
+    u_n = data[:, 2, bc_id, :]
+    u_d = data[:, 3, bc_id, :]
+    K = u_d/u_n
+    κ = K ./ K_scale' 
+
+    c_field = zeros(ne+1, ne+1)
+    Lx, Ly = 1.0, 1.0   # box edge lengths
+    xx , yy = LinRange(0, Lx, ne+1), LinRange(0, Ly, ne+1)
+    for i = 1:ne+1
+        for j = 1:ne+1
+            c_field[i, j] = cs[1](xx[i], yy[j])
+        end
+    end
+
+    return κ, c_field
+end
+
+# function Generate_cs(θ, seq_pairs, ne)
+
+#     cs = [(x,y)->c_func_random(x, y, θ, seq_pairs);]
+
+#     c_field = zeros(ne+1, ne+1)
+
+#     Lx, Ly = 1.0, 1.0   # box edge lengths
+
+#     xx , yy = LinRange(0, Lx, ne+1), LinRange(0, Ly, ne+1)
+
+#     for i = 1:ne+1
+#         for j = 1:ne+1
+#             c_field[i, j] = cs(xx[i], yy[j])
+#         end
+#     end
+
+#     return c_field
+
+# end

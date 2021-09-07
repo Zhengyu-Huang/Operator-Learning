@@ -47,7 +47,7 @@ def colnorm(u):
 
 
 N = 100
-M = 5000
+M = 10000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -64,7 +64,7 @@ inputs  = cs
 outputs = K
 
 
-compute_input_PCA = False
+compute_input_PCA = True
 
 if compute_input_PCA:
     train_inputs = np.reshape(inputs[:,:,:M//2], (-1, M//2))
@@ -72,6 +72,8 @@ if compute_input_PCA:
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
+    
+    r_f = min(r_f, 500)
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     f_hat_test = np.matmul(Uf.T,test_inputs)

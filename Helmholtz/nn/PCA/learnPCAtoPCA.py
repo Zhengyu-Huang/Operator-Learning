@@ -34,7 +34,7 @@ def colnorm(u):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
-M = 5000
+M = 10000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -51,7 +51,7 @@ dx    = xgrid[1] - xgrid[0]
 inputs  = cs
 outputs = K
 
-compute_input_PCA = False
+compute_input_PCA = True
 
 if compute_input_PCA:
     train_inputs = np.reshape(inputs[:,:,:M//2], (-1, M//2))
@@ -112,7 +112,7 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 loss_scale = 1000
-n_epochs = 5000
+n_epochs = 500000
 
 x_train = x_train.to(device)
 y_train = y_train.to(device)

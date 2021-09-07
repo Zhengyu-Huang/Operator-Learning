@@ -25,6 +25,7 @@ color1 = 'tab:blue'
 color2 = 'tab:green'
 color3 = 'tab:orange'
 
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 def colnorm(u):
 	return np.sqrt(np.sum(u**2,0))
@@ -94,20 +95,21 @@ g_hat = np.matmul(Ug.T,train_outputs)
 y_train = torch.from_numpy(g_hat.T.astype(np.float32))
 
 
-N_neurons = 50
 
-if N_neurons == 20:
-    DirectNet = DirectNet_20
-elif N_neurons == 50:
-    DirectNet = DirectNet_50
-
+# layers = 4
+N_neurons = 100
+# model = FNN(r_f, r_g, layers, N_neurons) 
+# model.load_state_dict(torch.load("PCANet_"+str(N_neurons)+".model", map_location=device))
+# model.to(device)
 model = torch.load("PCANet_"+str(N_neurons)+".model")
+model.to(device)
 
 loss_fn = torch.nn.MSELoss(reduction='sum')
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
-y_pred_train = model(x_train).detach().numpy().T
+x_train = x_train.to(device)
+y_pred_train = model(x_train).detach().cpu().numpy().T
 
 rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
@@ -119,7 +121,7 @@ mre_nn_train = np.mean(rel_err_nn_train)
 
 # print(f_hat_test.shape)
 # f_hat_test = np.matmul(Uf.T,test_inputs)
-y_pred_test  = model(torch.from_numpy(f_hat_test.T.astype(np.float32))).detach().numpy().T
+y_pred_test  = model(torch.from_numpy(f_hat_test.T.astype(np.float32)).to(device)).detach().cpu().numpy().T
 
 rel_err_nn_test = np.zeros(M//2)
 for i in range(M//2):

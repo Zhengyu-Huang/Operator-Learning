@@ -30,6 +30,9 @@ def colnorm(u):
 	return np.sqrt(np.sum(u**2,0))
 
 
+
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
 N = 100
 M = 5000
 N_theta = 100
@@ -56,6 +59,7 @@ if compute_input_PCA:
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
+    r_f = min(r_f, 500)
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     x_train = torch.from_numpy(f_hat.T.astype(np.float32))
@@ -96,14 +100,11 @@ print("Input #bases : ", r_f, " output #bases : ", r_g)
 
 
 
-N_neurons = 50
+N_neurons = 100
+layers = 4
+model = FNN(r_f, r_g, layers, N_neurons) 
+model.to(device)
 
-if N_neurons == 20:
-    DirectNet = DirectNet_20
-elif N_neurons == 50:
-    DirectNet = DirectNet_50
-
-model = DirectNet(r_f,r_g)
 # model = torch.load("PCANet_"+str(N_neurons)+".model")
 
 loss_fn = torch.nn.MSELoss(reduction='sum')
@@ -111,7 +112,12 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 loss_scale = 1000
-n_epochs = 5000 #500000
+n_epochs = 5000
+
+x_train = x_train.to(device)
+y_train = y_train.to(device)
+# y_pred = y_pred.to(device)
+
 for epoch in range(n_epochs):
 	y_pred = model(x_train)
 	loss = loss_fn(y_pred,y_train)*loss_scale

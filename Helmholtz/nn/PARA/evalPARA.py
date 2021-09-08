@@ -35,7 +35,7 @@ def colnorm(u):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
-M = 100
+M = 5000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -77,6 +77,8 @@ else:
     x_test_part = test_inputs.astype(np.float32)
 
     
+del inputs
+del Ui, Vi, Uf, f_hat
 
 Y, X = np.meshgrid(xgrid, xgrid)
 # test
@@ -87,70 +89,81 @@ assert(X[i, j] == i*dx and Y[i, j] == j*dx)
 X_upper = full2upper(X)
 Y_upper = full2upper(Y)
 N_upper = len(X_upper)
-x_train = np.zeros((M//2 * N_upper, r_f + 2))
-y_train = np.zeros(M//2 * N_upper)
+x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
+# y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
 
 for i in range(M//2):
     d_range = range(i*N_upper, (i + 1)*N_upper)
     x_train[d_range , 0:r_f]   = x_train_part[i, :]
     x_train[d_range , r_f]     = X_upper
     x_train[d_range , r_f + 1] = Y_upper 
-    y_train[d_range] = full2upper(K[:, :, i])
+    # y_train[d_range] = full2upper(K[:, :, i])
 
-x_test = np.zeros(((M-M//2) * N_upper, r_f + 2))
 
+      
+print("Input dim : ", r_f+2, " output dim : ", 1)
+ 
+N_neurons = 100
+model = torch.load("PARANet_"+str(N_neurons)+".model", map_location=device)
+model.to(device)
+
+# Training error
+rel_err_nn_train = np.zeros(M//2)
+for i in range(M//2):
+    print("i / N = ", i, " / ", M//2)
+    K_train_pred_upper = model( torch.from_numpy(x_train[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+    K_train_pred = upper2full_1(K_train_pred_upper)
+    rel_err_nn_train[i] =  np.linalg.norm(K_train_pred - K_train[:, :, i])/np.linalg.norm(K_train[:, :, i])
+mre_nn_train = np.mean(rel_err_nn_train)
+
+####### worst error plot
+i = np.argmax(rel_err_nn_train)
+K_train_pred_upper = model( torch.from_numpy(x_train[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+K_train_pred = upper2full_1(K_train_pred_upper)
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = K_train[:,:,i].min(), K_train[:,:,i].max()
+ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N+1,N+1)),  shading='gouraud')
+ax[1].pcolormesh(X, Y, K_train_pred, shading='gouraud', vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, K_train[:,:,i], shading='gouraud', vmin=vmin, vmax =vmax)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.tight_layout()
+plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
+plt.close()
+
+
+del x_train,  K_train
+########### Test
+x_test = np.zeros(((M-M//2) * N_upper, r_f + 2), dtype = np.float32)
 for i in range(M-M//2):
     d_range = range(i*N_upper, (i + 1)*N_upper)
     x_test[d_range , 0:r_f]   = x_test_part[i, :]
     x_test[d_range , r_f]     = X_upper
     x_test[d_range , r_f + 1] = Y_upper 
     
-      
-
-
-print("Input dim : ", r_f+2, " output dim : ", 1)
- 
-
-N_neurons = 100
-model = torch.load("PARANet_"+str(N_neurons)+".model", map_location=device)
-model.to(device)
-
-# model = torch.load("PCANet_"+str(N_neurons)+".model")
-
-loss_fn = torch.nn.MSELoss(reduction='sum')
-learning_rate = 1e-3
-optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
-
-loss_scale = 1000
-n_epochs = 500
-
-x_train = torch.from_numpy(x_train.astype(np.float32)).to(device)
-x_test = torch.from_numpy(x_test.astype(np.float32)).to(device)
-# y_pred = y_pred.to(device)
-
-# Training error
-K_train_pred_upper = model(x_train).detach().cpu().numpy()
-K_train_pred = upper2full(K_train_pred_upper, M//2)
-
-
-rel_err_nn_train = np.zeros(M//2)
-for i in np.arange(0, M//2):
-    rel_err_nn_train[i] =  np.linalg.norm(K_train_pred[:, :, i] - K_train[:, :, i])/np.linalg.norm(K_train[:, :, i])
-mre_nn_train = np.mean(rel_err_nn_train)
-
-
-
-
 # Test error
-K_test_pred_upper = model(x_test).detach().cpu().numpy()
-K_test_pred = upper2full(K_test_pred_upper, M//2)
 rel_err_nn_test = np.zeros(M//2)
-for i in np.arange(0, M//2):
-    rel_err_nn_test[i] =  np.linalg.norm(K_test_pred[:, :, i] - K_test[:, :, i])/np.linalg.norm(K_test[:, :, i])
+for i in range(M-M//2):
+    print("i / N = ", i, " / ", M-M//2)
+    K_test_pred_upper = model( torch.from_numpy(x_test[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+    K_test_pred = upper2full_1(K_test_pred_upper)
+    rel_err_nn_test[i] =  np.linalg.norm(K_test_pred - K_test[:, :, i])/np.linalg.norm(K_test[:, :, i])
 mre_nn_test = np.mean(rel_err_nn_test)
 
-print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
-
+####### worst error plot
+i = np.argmax(rel_err_nn_test)
+K_test_pred_upper = model( torch.from_numpy(x_test[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+K_test_pred = upper2full_1(K_test_pred_upper)
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = K_test[:,:,i].min(), K_test[:,:,i].max()
+ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N+1,N+1)),  shading='gouraud')
+ax[1].pcolormesh(X, Y, K_test_pred, shading='gouraud', vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, K_test[:,:,i], shading='gouraud', vmin=vmin, vmax =vmax)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.tight_layout()
+plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
+plt.close()
 
 
 fig,ax = plt.subplots(figsize=(3,3))
@@ -160,43 +173,8 @@ ax.semilogy(rel_err_nn_test,lw=0.5,color=color2,label='test')
 ax.legend()
 plt.xlabel('data index')
 plt.ylabel('Relative errors')
+plt.tight_layout()
 plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
-
-####### worst error plot
-ind = np.argmax(rel_err_nn_test)
-
-fig,ax = plt.subplots(ncols=3, figsize=(9,3))
-vmin, vmax = K_train[:,:,ind].min(), K_train[:,:,ind].max()
-ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, ind], (N+1,N+1)),  shading='gouraud')
-ax[1].pcolormesh(X, Y, K_train_pred[:,:,ind], shading='gouraud', vmin=vmin, vmax =vmax)
-ax[2].pcolormesh(X, Y, K_train[:,:,ind], shading='gouraud', vmin=vmin, vmax =vmax)
-plt.xlabel('$x$')
-plt.ylabel('u(x)')
-plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
-plt.close()
-
-# for ind in np.random.randint(0,1024,(5,)):
-# 	fig,ax = plt.subplots(figsize=(3,3))
-# 	fig.subplots_adjust(bottom=0.2,left = 0.15)
-# 	ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
-# 	ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
-# 	ax.plot(xgrid,np.matmul(Ug,y_pred_test[:,ind]),lw=0.5,color=color3,label="NN u(T)")
-# 	ax.legend()
-# 	plt.xlabel('$x$')
-# 	plt.ylabel('u(x)')
-# 	plt.savefig('test'+str(ind)+'.png',pad_inches=3)
-# 	plt.close()
-
-ind = np.argmax(rel_err_nn_train)
-
-fig,ax = plt.subplots(ncols=3, figsize=(9,3))
-vmin, vmax = K_train[:,:,ind].min(), K_train[:,:,ind].max()
-ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, ind], (N+1,N+1)),  shading='gouraud')
-ax[1].pcolormesh(X, Y, K_test_pred[:,:,ind], shading='gouraud', vmin=vmin, vmax =vmax)
-ax[2].pcolormesh(X, Y, K_test[:,:,ind], shading='gouraud', vmin=vmin, vmax =vmax)
-plt.xlabel('$x$')
-plt.ylabel('u(x)')
-plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
-plt.close()
+print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)

@@ -100,7 +100,7 @@ def full2upper(K):
     return upper
 
 
-def upper2full(upper):
+def upper2full_1(upper):
     N_x = N_y = int((np.sqrt(8*len(upper) + 1) - 1)/2)
     K = np.zeros((N_x , N_y))
     i = 0

@@ -1,0 +1,1 @@
+srun --pty -t 20:00:00 -n 1 -N 1 --mem-per-cpu=32G --gres gpu:1 /bin/bash -l

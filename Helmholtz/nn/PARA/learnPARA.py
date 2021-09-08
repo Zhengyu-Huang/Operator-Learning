@@ -35,7 +35,7 @@ def colnorm(u):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
-M = 100
+M = 5000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -55,7 +55,7 @@ compute_input_PCA = True
 
 if compute_input_PCA:
     train_inputs = np.reshape(inputs[:,:,:M//2], (-1, M//2))
-    test_inputs  = np.reshape(inputs[:,:,M//2:M], (-1, M-M//2))
+    # test_inputs  = np.reshape(inputs[:,:,M//2:M], (-1, M-M//2))
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
@@ -66,10 +66,14 @@ if compute_input_PCA:
 else:
     
     train_inputs =  theta[:M//2, :]
-    test_inputs  = theta[M//2:M, :]
+    # test_inputs  = theta[M//2:M, :]
     r_f = N_theta
     x_train_part = train_inputs.astype(np.float32)
-    
+
+del train_inputs
+del inputs
+del Ui, Vi, Uf, f_hat
+
 
 Y, X = np.meshgrid(xgrid, xgrid)
 # test
@@ -80,8 +84,8 @@ assert(X[i, j] == i*dx and Y[i, j] == j*dx)
 X_upper = full2upper(X)
 Y_upper = full2upper(Y)
 N_upper = len(X_upper)
-x_train = np.zeros((M//2 * N_upper, r_f + 2))
-y_train = np.zeros(M//2 * N_upper)
+x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
+y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
 
 for i in range(M//2):
     d_range = range(i*N_upper, (i + 1)*N_upper)
@@ -89,7 +93,7 @@ for i in range(M//2):
     x_train[d_range , r_f]     = X_upper
     x_train[d_range , r_f + 1] = Y_upper 
     y_train[d_range] = full2upper(K[:, :, i])
-   
+    
 
 
 print("Input dim : ", r_f+2, " output dim : ", 1)
@@ -107,21 +111,21 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 loss_scale = 1000
-n_epochs = 500
+n_epochs = 5000
 
-x_train = torch.from_numpy(x_train.astype(np.float32)).to(device)
-y_train = torch.from_numpy(y_train.astype(np.float32)).unsqueeze(-1).to(device)
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train).unsqueeze(-1)
 # y_pred = y_pred.to(device)
 
-
 ds = DirectData(X=x_train, y=y_train)
-ds = DataLoader(ds, batch_size=512, shuffle=True)
+# ds = DataLoader(ds, batch_size=512, shuffle=True)
+ds = DataLoader(ds, batch_size=(N+1)*(N+1), shuffle=False)
 
 
 for epoch in range(n_epochs):
 
     for ix, (_x, _y) in enumerate(ds):
-        # _x, _y = _x.to(device), _y.to(device)
+        _x, _y = _x.to(device), _y.to(device)
         y_pred = model(_x)
         loss = loss_fn(y_pred,_y)*loss_scale
         

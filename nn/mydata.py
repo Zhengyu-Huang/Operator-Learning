@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 from torch.utils.data import Dataset, DataLoader
 
 def preprocess(params, dim, X, data):
@@ -88,3 +89,36 @@ def preprocess_PCA(params, data, acc=0.9999, N_trunc=-1):
     return bases, X_train, y_train, X_test, y_test
 
 
+def full2upper(K):
+    N_x, N_y = K.shape
+    upper = np.zeros(N_x *(N_y + 1) // 2)
+    i = 0
+    for i_x in range(N_x):
+        for i_y in range(i_x+1):
+            upper[i] = K[i_x, i_y]
+            i += 1
+    return upper
+
+
+def upper2full(upper):
+    N_x = N_y = int((np.sqrt(8*len(upper) + 1) - 1)/2)
+    K = np.zeros((N_x , N_y))
+    i = 0
+    for i_x in range(N_x):
+        for i_y in range(i_x+1):
+            K[i_x, i_y] = K[i_y, i_x]  = upper[i]
+            i += 1
+    return K
+
+def upper2full(upper, N_data):
+    N_x = N_y = int((np.sqrt(8*len(upper)/N_data + 1) - 1)/2)
+    N_upper =  N_x *(N_y + 1) //2
+    K = np.zeros((N_x , N_y, N_data))
+
+    for i_data in range(N_data):
+        i = 0
+        for i_x in range(N_x):
+            for i_y in range(i_x+1):
+                K[i_x, i_y, i_data] = K[i_y, i_x, i_data]  = upper[i + N_upper*i_data]
+                i += 1
+    return K

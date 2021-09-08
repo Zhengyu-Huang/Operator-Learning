@@ -57,7 +57,6 @@ cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
 acc=0.99
 
 xgrid = np.linspace(0,1,N+1)
-xgrid = xgrid[:-1]
 dx    = xgrid[1] - xgrid[0]
 
 inputs  = cs
@@ -161,14 +160,13 @@ plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 ind = np.argmax(rel_err_nn_test)
+Y, X = np.meshgrid(xgrid, xgrid)
 
-
-fig,ax = plt.subplots(figsize=(3,3))
-fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
-ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
-ax.plot(xgrid,np.matmul(Ug,y_pred_test[:,ind]),lw=0.5,color=color3,label="NN u(T)")
-ax.legend()
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = min(test_outputs[:,ind]), max(test_outputs[:,ind])
+ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:,ind],(N+1,N+1)),               shading='gouraud')
+ax[1].pcolormesh(X, Y, np.reshape(test_outputs[:,ind],(N+1,N+1)),              shading='gouraud', vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, np.reshape(np.matmul(Ug,y_pred_test[:,ind]),(N+1,N+1)), shading='gouraud', vmin=vmin, vmax =vmax)
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
 plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
@@ -188,12 +186,11 @@ plt.close()
 
 ind = np.argmax(rel_err_nn_train)
 
-fig,ax = plt.subplots(figsize=(3,3))
-fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(xgrid,train_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
-ax.plot(xgrid,train_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
-ax.plot(xgrid,np.matmul(Ug,y_pred_train[:,ind]),lw=0.5,color=color3,label="NN u(T)")
-ax.legend()
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = min(test_outputs[:,ind]), max(test_outputs[:,ind])
+ax[0].pcolormesh(X, Y, np.reshape(train_inputs[:,ind],(N+1,N+1)),               shading="gouraud")
+ax[1].pcolormesh(X, Y, np.reshape(train_outputs[:,ind],(N+1,N+1)),              shading="gouraud", vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, np.reshape(np.matmul(Ug,y_pred_train[:,ind]),(N+1,N+1)), shading="gouraud", vmin=vmin, vmax =vmax)
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
 plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)

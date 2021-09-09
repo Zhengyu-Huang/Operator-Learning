@@ -8,8 +8,28 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
+from datetime import datetime
 
+import matplotlib as mpl 
+from matplotlib.lines import Line2D 
+# mpl.use('TkAgg')
 import matplotlib.pyplot as plt
+
+plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
+plt.rc("text", usetex=True)         # Crisp axis ticks
+plt.rc("font", family="serif")      # Crisp axis labels
+plt.rc("legend", edgecolor='none')  # No boxes around legends
+
+plt.rc("figure",facecolor="#ffffff")
+plt.rc("axes",facecolor="#ffffff",edgecolor="#000000",labelcolor="#000000")
+plt.rc("savefig",facecolor="#ffffff")
+plt.rc("text",color="#000000")
+plt.rc("xtick",color="#000000")
+plt.rc("ytick",color="#000000")
+
+color1 = 'tab:blue'
+color2 = 'tab:green'
+color3 = 'tab:orange'
 
 import operator
 from functools import reduce
@@ -23,6 +43,19 @@ from Adam import Adam
 torch.manual_seed(0)
 np.random.seed(0)
 
+N = 100
+M = 5000
+N_theta = 100
+prefix = "../"  
+K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+
+
+xgrid = np.linspace(0,1,N+1)
+dx    = xgrid[1] - xgrid[0]
+Y, X = np.meshgrid(xgrid, xgrid)
+
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 ################################################################
 # fourier layer
@@ -165,12 +198,6 @@ width = 32
 # load data and data normalization
 ################################################################
 
-N = 100
-M = 5000
-N_theta = 100
-prefix = "../"  
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
 
 # transpose
 cs = cs.transpose(2, 0, 1)
@@ -191,6 +218,8 @@ y_normalizer = UnitGaussianNormalizer(y_train)
 y_train = y_normalizer.encode(y_train)
 
 
+
+
 ntrain = M//2
 ntest = M-M//2
 s = N+1
@@ -203,55 +232,69 @@ y_train = y_train.reshape(ntrain,s,s,1)
 y_test = y_test.reshape(ntest,s,s,1)
 
 
-train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
-test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_test, y_test), batch_size=batch_size, shuffle=False)
+model = torch.load("FNO.model", map_location=device)
 
-################################################################
-# training and evaluation
-################################################################
-model = FNO2d(modes, modes, width).cuda()
-print(count_params(model))
+# Training error
+rel_err_nn_train = np.zeros(M//2)
+for i in range(M//2):
+    print("i / N = ", i, " / ", M//2)
+    K_train = y_normalizer.decode(model(x_train[i:i+1, :, :, :].to(device))).detach().cpu().numpy()
+    rel_err_nn_train[i] =  np.linalg.norm(K_train - y_normalizer.decode(y_train[i, :, :]).cpu().numpy())/np.linalg.norm(y_normalizer.decode(y_train[i, :, :]).cpu().numpy())
+mre_nn_train = np.mean(rel_err_nn_train)
 
-optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+####### worst error plot
+i = np.argmax(rel_err_nn_train)
+K_train = y_normalizer.decode(model(x_train[i:i+1, :, :, :].to(device))).detach().cpu().numpy()
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = y_normalizer.decode(y_train[i,:,:]).detach().cpu().numpy().min(), y_normalizer.decode(y_train[i,:,:]).detach().cpu().numpy().max()
+ax[0].pcolormesh(X, Y, x_normalizer.decode(x_train[i, :, :, 0]).detach().cpu().numpy(),  shading='gouraud')
+ax[1].pcolormesh(X, Y, K_train[0,:,:,0], shading='gouraud', vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, y_normalizer.decode(y_train[i,:,:, 0]).detach().cpu().numpy(), shading='gouraud', vmin=vmin, vmax =vmax)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.tight_layout()
+plt.savefig('worst_case_train_NN.png', pad_inches=3)
+plt.close()
 
-myloss = LpLoss(size_average=False)
-y_normalizer.cuda()
-for ep in range(epochs):
-    model.train()
-    t1 = default_timer()
-    train_l2 = 0
-    for x, y in train_loader:
-        x, y = x.cuda(), y.cuda()
 
-        batch_size_ = x.shape[0]
-        optimizer.zero_grad()
-        out = model(x).reshape(batch_size_, s, s)
-        out = y_normalizer.decode(out)
-        y = y_normalizer.decode(y)
+########### Test
+rel_err_nn_test = np.zeros(M-M//2)
+for i in range(M-M//2):
+    print("i / N = ", i, " / ", M-M//2)
+    K_test = y_normalizer.decode(model(x_test[i:i+1, :, :, :].to(device))).detach().cpu().numpy()
+    rel_err_nn_test[i] =  np.linalg.norm(K_test - y_test[i, :, :].cpu().numpy())/np.linalg.norm(y_test[i, :, :].cpu().numpy())
+mre_nn_test = np.mean(rel_err_nn_test)
 
-        loss = myloss(out.view(batch_size_,-1), y.view(batch_size_,-1))
-        loss.backward()
 
-        optimizer.step()
-        train_l2 += loss.item()
 
-    torch.save(model, "FNO.model")
-    scheduler.step()
+####### worst error plot
+i = np.argmax(rel_err_nn_test)
+K_test = y_normalizer.decode(model(x_test[i:i+1, :, :, :].to(device))).detach().cpu().numpy()
+fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+vmin, vmax = y_normalizer.decode(y_test[i,:,:]).detach().cpu().numpy().min(), y_normalizer.decode(y_test[i,:,:]).detach().cpu().numpy().max()
+ax[0].pcolormesh(X, Y, x_normalizer.decode(x_test[i, :, :, 0]).detach().cpu().numpy(),  shading='gouraud')
+ax[1].pcolormesh(X, Y, K_test[0,:,:,0], shading='gouraud', vmin=vmin, vmax =vmax)
+ax[2].pcolormesh(X, Y, y_test[i,:,:, 0].detach().cpu().numpy(), shading='gouraud', vmin=vmin, vmax =vmax)
+plt.xlabel('x')
+plt.ylabel('y')
+plt.tight_layout()
+plt.savefig('worst_case_test_NN.png', pad_inches=3)
+plt.close()
 
-    model.eval()
-    test_l2 = 0.0
-    with torch.no_grad():
-        for x, y in test_loader:
-            x, y = x.cuda(), y.cuda()
-            batch_size_ = x.shape[0]
-            out = model(x).reshape(batch_size_, s, s)
-            out = y_normalizer.decode(out)
 
-            test_l2 += myloss(out.view(batch_size_,-1), y.view(batch_size_,-1)).item()
 
-    train_l2/= ntrain
-    test_l2 /= ntest
+fig,ax = plt.subplots(figsize=(3,3))
+fig.subplots_adjust(bottom=0.2,left = 0.15)
+ax.semilogy(rel_err_nn_train,lw=0.5,color=color1,label='training')
+ax.semilogy(rel_err_nn_test,lw=0.5,color=color2,label='test')
+ax.legend()
+plt.xlabel('data index')
+plt.ylabel('Relative errors')
+plt.tight_layout()
+plt.savefig('NN_errors.png',pad_inches=3)
+plt.close()
 
-    t2 = default_timer()
-    print(ep, t2-t1, train_l2, test_l2)
+print("NN: rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
+
+
+

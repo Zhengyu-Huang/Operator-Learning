@@ -132,9 +132,9 @@ for epoch in range(n_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-    if epoch % 10 == 0:
-        print("[{}/{}], loss: {}, time {}".format(epoch, n_epochs, np.round(loss.item(), 3),datetime.now()))
-        torch.save(model, "PARANet_"+str(N_neurons)+".model")
+    # if epoch % 10 == 0:
+    print("[{}/{}], loss: {}, time {}".format(epoch, n_epochs, np.round(loss.item(), 3),datetime.now()))
+    torch.save(model, "PARANet_"+str(N_neurons)+".model")
 
 	
 # save the model

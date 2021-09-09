@@ -115,11 +115,19 @@ n_epochs = 5000
 
 x_train = torch.from_numpy(x_train)
 y_train = torch.from_numpy(y_train).unsqueeze(-1)
+
+
+x_normalizer = UnitGaussianNormalizer(x_train)
+x_train = x_normalizer.encode(x_train)
+y_normalizer = UnitGaussianNormalizer(y_train)
+y_train = y_normalizer.encode(y_train)
+
+
 # y_pred = y_pred.to(device)
 
 ds = DirectData(X=x_train, y=y_train)
-# ds = DataLoader(ds, batch_size=512, shuffle=True)
-ds = DataLoader(ds, batch_size=(N+1)*(N+1), shuffle=False)
+ds = DataLoader(ds, batch_size=1024, shuffle=True)
+# ds = DataLoader(ds, batch_size=(N+1)*(N+1), shuffle=False)
 
 
 for epoch in range(n_epochs):
@@ -132,6 +140,7 @@ for epoch in range(n_epochs):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
     # if epoch % 10 == 0:
     print("[{}/{}], loss: {}, time {}".format(epoch, n_epochs, np.round(loss.item(), 3),datetime.now()))
     torch.save(model, "PARANet_"+str(N_neurons)+".model")

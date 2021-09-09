@@ -35,7 +35,7 @@ def colnorm(u):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
-M = 5000
+M = 10 # 5000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -90,14 +90,22 @@ X_upper = full2upper(X)
 Y_upper = full2upper(Y)
 N_upper = len(X_upper)
 x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
-# y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
+y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
 
 for i in range(M//2):
     d_range = range(i*N_upper, (i + 1)*N_upper)
     x_train[d_range , 0:r_f]   = x_train_part[i, :]
     x_train[d_range , r_f]     = X_upper
     x_train[d_range , r_f + 1] = Y_upper 
-    # y_train[d_range] = full2upper(K[:, :, i])
+    y_train[d_range] = full2upper(K[:, :, i])
+
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train).unsqueeze(-1)
+
+x_normalizer = UnitGaussianNormalizer(x_train)
+x_train = x_normalizer.encode(x_train)
+y_normalizer = UnitGaussianNormalizer(y_train)
+# y_train = y_normalizer.encode(y_train)
 
 
       
@@ -107,18 +115,21 @@ N_neurons = 100
 model = torch.load("PARANet_"+str(N_neurons)+".model", map_location=device)
 model.to(device)
 
+if torch.cuda.is_available():
+    y_normalizer.cuda()
+
 # Training error
 rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
     print("i / N = ", i, " / ", M//2)
-    K_train_pred_upper = model( torch.from_numpy(x_train[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+    K_train_pred_upper = y_normalizer.decode(model( x_train[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
     K_train_pred = upper2full_1(K_train_pred_upper)
     rel_err_nn_train[i] =  np.linalg.norm(K_train_pred - K_train[:, :, i])/np.linalg.norm(K_train[:, :, i])
 mre_nn_train = np.mean(rel_err_nn_train)
 
 ####### worst error plot
 i = np.argmax(rel_err_nn_train)
-K_train_pred_upper = model( torch.from_numpy(x_train[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+K_train_pred_upper = y_normalizer.decode(model(x_train[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
 K_train_pred = upper2full_1(K_train_pred_upper)
 fig,ax = plt.subplots(ncols=3, figsize=(9,3))
 vmin, vmax = K_train[:,:,i].min(), K_train[:,:,i].max()
@@ -140,19 +151,22 @@ for i in range(M-M//2):
     x_test[d_range , 0:r_f]   = x_test_part[i, :]
     x_test[d_range , r_f]     = X_upper
     x_test[d_range , r_f + 1] = Y_upper 
-    
+
+x_test = torch.from_numpy(x_test)
+x_test = x_normalizer.encode(x_test)
+
 # Test error
 rel_err_nn_test = np.zeros(M//2)
 for i in range(M-M//2):
     print("i / N = ", i, " / ", M-M//2)
-    K_test_pred_upper = model( torch.from_numpy(x_test[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+    K_test_pred_upper = y_normalizer.decode(model(x_test[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
     K_test_pred = upper2full_1(K_test_pred_upper)
     rel_err_nn_test[i] =  np.linalg.norm(K_test_pred - K_test[:, :, i])/np.linalg.norm(K_test[:, :, i])
 mre_nn_test = np.mean(rel_err_nn_test)
 
 ####### worst error plot
 i = np.argmax(rel_err_nn_test)
-K_test_pred_upper = model( torch.from_numpy(x_test[i*N_upper:(i+1)*N_upper, :]).to(device) ).detach().cpu().numpy()
+K_test_pred_upper = y_normalizer.decode(model(x_test[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
 K_test_pred = upper2full_1(K_test_pred_upper)
 fig,ax = plt.subplots(ncols=3, figsize=(9,3))
 vmin, vmax = K_test[:,:,i].min(), K_test[:,:,i].max()

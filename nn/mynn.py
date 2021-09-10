@@ -6,49 +6,59 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-# A neural network with u_n， θ_c
-# u_d = K(θ_c) u_n
-# u_d(x) = \int K(x, y, θ_c) u_n(y) dy
-class DirectNet_20(nn.Module):
+import scipy.io
+import h5py
 
-    def __init__(self, N_in, N_out):
-        super(DirectNet_20, self).__init__()
-        # an affine operation: y = Wx + b
-        
-        self.fc1 = nn.Linear(N_in, 20)
-        self.fc2 = nn.Linear(20, 20)
-        self.fc3 = nn.Linear(20, 20)
-        self.fc4 = nn.Linear(20, 20)
-        self.fc5 = nn.Linear(20, N_out)
-
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = self.fc5(x)
-        return x
+import operator
+from functools import reduce
+from functools import partial
 
 
-class DirectNet_50(nn.Module):
+class LpLoss(object):
+    def __init__(self, d=2, p=2, size_average=True, reduction=True):
+        super(LpLoss, self).__init__()
 
-    def __init__(self, N_in, N_out):
-        super(DirectNet_50, self).__init__()
-        # an affine operation: y = Wx + b
-        
-        self.fc1 = nn.Linear(N_in, 50)
-        self.fc2 = nn.Linear(50, 50)
-        self.fc3 = nn.Linear(50, 50)
-        self.fc4 = nn.Linear(50, 50)
-        self.fc5 = nn.Linear(50, N_out)
+        #Dimension and Lp-norm type are postive
+        assert d > 0 and p > 0
 
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
-        x = self.fc5(x)
-        return x
+        self.d = d
+        self.p = p
+        self.reduction = reduction
+        self.size_average = size_average
+
+    def abs(self, x, y):
+        num_examples = x.size()[0]
+
+        #Assume uniform mesh
+        h = 1.0 / (x.size()[1] - 1.0)
+
+        all_norms = (h**(self.d/self.p))*torch.norm(x.view(num_examples,-1) - y.view(num_examples,-1), self.p, 1)
+
+        if self.reduction:
+            if self.size_average:
+                return torch.mean(all_norms)
+            else:
+                return torch.sum(all_norms)
+
+        return all_norms
+
+    def rel(self, x, y):
+        num_examples = x.size()[0]
+
+        diff_norms = torch.norm(x.reshape(num_examples,-1) - y.reshape(num_examples,-1), self.p, 1)
+        y_norms = torch.norm(y.reshape(num_examples,-1), self.p, 1)
+
+        if self.reduction:
+            if self.size_average:
+                return torch.mean(diff_norms/y_norms)
+            else:
+                return torch.sum(diff_norms/y_norms)
+
+        return diff_norms/y_norms
+
+    def __call__(self, x, y):
+        return self.rel(x, y)
+
 
 
 
@@ -261,52 +271,140 @@ class DeepONet(StructureNN):
         params = nn.ParameterDict()
         params['bias'] = nn.Parameter(torch.zeros([1]))
         return params
-            
-#     # def __initialize(self):
-#     #     for i in range(1, self.trunk_depth):
-#     #         self.weight_init_(self.modus['TrLinM{}'.format(i)].weight)
-#     #         nn.init.constant_(self.modus['TrLinM{}'.format(i)].bias, 0)
-# # preprocess the training data 
 
-# class DirectData(Dataset):
 
-#     def __init__(self, X, y):
+
+
+################################################################
+# fourier neural operator
+################################################################
+class SpectralConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, modes1, modes2):
+        super(SpectralConv2d, self).__init__()
+
+        """
+        2D Fourier layer. It does FFT, linear transform, and Inverse FFT.    
+        """
+
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.modes1 = modes1 #Number of Fourier modes to multiply, at most floor(N/2) + 1
+        self.modes2 = modes2
+
+        self.scale = (1 / (in_channels * out_channels))
+        self.weights1 = nn.Parameter(self.scale * torch.rand(in_channels, out_channels, self.modes1, self.modes2, dtype=torch.cfloat))
+        self.weights2 = nn.Parameter(self.scale * torch.rand(in_channels, out_channels, self.modes1, self.modes2, dtype=torch.cfloat))
+
+    # Complex multiplication
+    def compl_mul2d(self, input, weights):
+        # (batch, in_channel, x,y ), (in_channel, out_channel, x,y) -> (batch, out_channel, x,y)
+        return torch.einsum("bixy,ioxy->boxy", input, weights)
+
+    def forward(self, x):
+        batchsize = x.shape[0]
+        #Compute Fourier coeffcients up to factor of e^(- something constant)
+        x_ft = torch.fft.rfft2(x)
+
+        # Multiply relevant Fourier modes
+        out_ft = torch.zeros(batchsize, self.out_channels,  x.size(-2), x.size(-1)//2 + 1, dtype=torch.cfloat, device=x.device)
+        out_ft[:, :, :self.modes1, :self.modes2] = \
+            self.compl_mul2d(x_ft[:, :, :self.modes1, :self.modes2], self.weights1)
+        out_ft[:, :, -self.modes1:, :self.modes2] = \
+            self.compl_mul2d(x_ft[:, :, -self.modes1:, :self.modes2], self.weights2)
+
+        #Return to physical space
+        x = torch.fft.irfft2(out_ft, s=(x.size(-2), x.size(-1)))
+        return x
+
+class FNO2d(nn.Module):
+    def __init__(self, modes1, modes2,  width):
+        super(FNO2d, self).__init__()
+
+        """
+        The overall network. It contains 4 layers of the Fourier layer.
+        1. Lift the input to the desire channel dimension by self.fc0 .
+        2. 4 layers of the integral operators u' = (W + K)(u).
+            W defined by self.w; K defined by self.conv .
+        3. Project from the channel space to the output space by self.fc1 and self.fc2 .
         
-#         self.X = X if torch.is_tensor(X) else torch.from_numpy(X)
-#         self.y = y if torch.is_tensor(y) else torch.from_numpy(y)
+        input: the solution of the coefficient function and locations (a(x, y), x, y)
+        input shape: (batchsize, x=s, y=s, c=3)
+        output: the solution 
+        output shape: (batchsize, x=s, y=s, c=1)
+        """
 
-#     def __len__(self):
-#         return len(self.X)
+        self.modes1 = modes1
+        self.modes2 = modes2
+        self.width = width
+        self.padding = 9 # pad the domain if input is non-periodic
+        self.fc0 = nn.Linear(1, self.width) # input channel is 3: (a(x, y), x, y)
 
-#     def __getitem__(self, idx):
-#         return self.X[idx], self.y[idx]
+        self.conv0 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+        self.conv1 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+        self.conv2 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+        self.conv3 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+        self.w0 = nn.Conv2d(self.width, self.width, 1)
+        self.w1 = nn.Conv2d(self.width, self.width, 1)
+        self.w2 = nn.Conv2d(self.width, self.width, 1)
+        self.w3 = nn.Conv2d(self.width, self.width, 1)
 
+        self.fc1 = nn.Linear(self.width, 1)
+        # self.fc1 = nn.Linear(self.width, 128)
+        # self.fc2 = nn.Linear(128, 1)
 
-# def build_bases(K, acc=0.9999, N_trunc=-1):
+    def forward(self, x):
+        # grid = self.get_grid(x.shape, x.device)
+        # x = torch.cat((x, grid), dim=-1)
+        x = self.fc0(x)
+        x = x.permute(0, 3, 1, 2)
+        x = F.pad(x, [0,self.padding, 0,self.padding])
 
-#     N_x, N_y, N_data = K.shape
+        x1 = self.conv0(x)
+        x2 = self.w0(x)
+        x = x1 + x2
+        x = F.gelu(x)
 
-#     data = K.reshape((-1, N_data))
+        x1 = self.conv1(x)
+        x2 = self.w1(x)
+        x = x1 + x2
+        x = F.gelu(x)
 
-#     # svd bases
-#     u, s, vh = np.linalg.svd(np.transpose(data))
+        x1 = self.conv2(x)
+        x2 = self.w2(x)
+        x = x1 + x2
+        x = F.gelu(x)
+
+        x1 = self.conv3(x)
+        x2 = self.w3(x)
+        x = x1 + x2
+
+        # if self.padding > 0:
+        x = x[..., :-self.padding, :-self.padding]
+        x = x.permute(0, 2, 3, 1)
+        x = self.fc1(x)
+        # x = F.gelu(x)
+        # x = self.fc2(x)
+        return x
     
-#     if N_trunc < 0:
-#         s_sum_tot = np.dot(s, s)
-#         s_sum = 0.0
-#         for i in range(N_data):
-#             s_sum += s[i]**2
-#             if s_sum > acc*s_sum_tot:
-#                 break
-#         N_trunc = i+1
-#     print("N_trunc = ", N_trunc)
+    # def get_grid(self, shape, device):
+    #     batchsize, size_x, size_y = shape[0], shape[1], shape[2]
+    #     gridx = torch.tensor(np.linspace(0, 1, size_x), dtype=torch.float)
+    #     gridx = gridx.reshape(1, size_x, 1, 1).repeat([batchsize, 1, size_y, 1])
+    #     gridy = torch.tensor(np.linspace(0, 1, size_y), dtype=torch.float)
+    #     gridy = gridy.reshape(1, 1, size_y, 1).repeat([batchsize, size_x, 1, 1])
+    #     return torch.cat((gridx, gridy), dim=-1).to(device)
+
+################################################################
+# configs
+################################################################
+# TRAIN_PATH = 'data/piececonst_r421_N1024_smooth1.mat'
+# TEST_PATH = 'data/piececonst_r421_N1024_smooth2.mat'
 
 
 
-#     scale = np.average(s[:N_trunc])
-#     data_svd = u[:, 0:N_trunc] * s[:N_trunc]/scale
-#     bases = vh[0:N_trunc, :]*scale
-
-#     return data_svd, bases, N_trunc, s
-
-
+# print the number of parameters
+def count_params(model):
+    c = 0
+    for p in list(model.parameters()):
+        c += reduce(operator.mul, list(p.size()))
+    return c

@@ -35,7 +35,7 @@ def colnorm(u):
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
-M = 10 # 5000
+M = 5000
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   

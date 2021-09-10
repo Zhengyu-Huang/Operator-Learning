@@ -2,6 +2,7 @@ import sys
 import numpy as np
 sys.path.append('../../../nn')
 from mynn import *
+from mydata import *
 from datetime import datetime
 
 import matplotlib as mpl 
@@ -105,12 +106,18 @@ N_neurons = 100
 model = torch.load("PCANet_"+str(N_neurons)+".model")
 model.to(device)
 
-loss_fn = torch.nn.MSELoss(reduction='sum')
-learning_rate = 1e-3
-optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
+
+x_normalizer = UnitGaussianNormalizer(x_train)
+x_train = x_normalizer.encode(x_train)
+y_normalizer = UnitGaussianNormalizer(y_train)
+y_train = y_normalizer.encode(y_train)
+
+if torch.cuda.is_available():
+    x_normalizer.cuda()
+    y_normalizer.cuda()
 
 x_train = x_train.to(device)
-y_pred_train = model(x_train).detach().cpu().numpy().T
+y_pred_train = y_normalizer.decode(model(x_train).detach()).cpu().numpy().T
 
 rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
@@ -122,7 +129,9 @@ mre_nn_train = np.mean(rel_err_nn_train)
 
 # print(f_hat_test.shape)
 # f_hat_test = np.matmul(Uf.T,test_inputs)
-y_pred_test  = model(torch.from_numpy(f_hat_test.T.astype(np.float32)).to(device)).detach().cpu().numpy().T
+x_test = torch.from_numpy(f_hat_test.T.astype(np.float32))
+x_test = x_normalizer.encode(x_test.to(device))
+y_pred_test  = y_normalizer.decode(model(x_test).detach()).cpu().numpy().T
 
 rel_err_nn_test = np.zeros(M//2)
 for i in range(M//2):

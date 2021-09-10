@@ -2,6 +2,7 @@ import sys
 import numpy as np
 sys.path.append('../../../nn')
 from mynn import *
+from mydata import *
 from datetime import datetime
 
 import matplotlib as mpl 
@@ -113,6 +114,12 @@ optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e
 
 loss_scale = 1000
 n_epochs = 500000
+
+
+x_normalizer = UnitGaussianNormalizer(x_train)
+x_train = x_normalizer.encode(x_train)
+y_normalizer = UnitGaussianNormalizer(y_train)
+y_train = y_normalizer.encode(y_train)
 
 x_train = x_train.to(device)
 y_train = y_train.to(device)

@@ -115,6 +115,13 @@ n_epochs = 5000
 
 x_train = torch.from_numpy(x_train)
 y_train = torch.from_numpy(y_train).unsqueeze(-1)
+
+x_normalizer = UnitGaussianNormalizer(x_train)
+x_train = x_normalizer.encode(x_train)
+y_normalizer = UnitGaussianNormalizer(y_train)
+y_train = y_normalizer.encode(y_train)
+
+
 # y_pred = y_pred.to(device)
 
 ds = DirectData(X=x_train, y=y_train)

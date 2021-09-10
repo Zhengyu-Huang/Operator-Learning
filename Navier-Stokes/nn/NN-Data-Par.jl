@@ -10,7 +10,7 @@ function Data_Generate()
     N_data = 10000
     ν = 1.0/40                                      # viscosity
     N, L = 64, 2*pi                                 # resolution and domain size 
-    N_t = 5000;                                     # time step
+    N_t = 10000;                                     # time step
     T = 10.0;                                        # final time
 
     d=2.0

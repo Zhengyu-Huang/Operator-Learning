@@ -121,19 +121,7 @@ for ep in range(epochs):
     torch.save(model, "FNO.model")
     scheduler.step()
 
-    # model.eval()
-    # test_l2 = 0.0
-    # with torch.no_grad():
-    #     for x, y in test_loader:
-    #         x, y = x.cuda(), y.cuda()
-    #         batch_size_ = x.shape[0]
-    #         out = model(x).reshape(batch_size_, s, s)
-    #         out = y_normalizer.decode(out)
-
-    #         test_l2 += myloss(out.view(batch_size_,-1), y.view(batch_size_,-1)).item()
-
     train_l2/= ntrain
-    # test_l2 /= ntest
 
     t2 = default_timer()
     print("Epoch : ", ep, " Epoch time : ", t2-t1, " Rel. Train L2 Loss : ", train_l2)

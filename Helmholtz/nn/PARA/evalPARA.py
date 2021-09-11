@@ -33,8 +33,11 @@ def colnorm(u):
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+M = int(sys.argv[1]) #5000
+N_neurons = int(sys.argv[2])
+
 N = 100
-M = 5000
+
 ntrain = M//2
 N_theta = 100
 prefix = "../"
@@ -61,7 +64,9 @@ if compute_input_PCA:
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
 
-    r_f = min(r_f, 500)
+    # r_f = min(r_f, 512)
+
+    r_f = 512
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     f_hat_test = np.matmul(Uf.T,test_inputs)
@@ -111,7 +116,6 @@ y_normalizer = UnitGaussianNormalizer(y_train)
       
 print("Input dim : ", r_f+2, " output dim : ", 1)
  
-N_neurons = 100
 model = torch.load("PARANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model", map_location=device)
 model.to(device)
 

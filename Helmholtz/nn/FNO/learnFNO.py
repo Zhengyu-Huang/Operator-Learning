@@ -36,7 +36,7 @@ np.random.seed(0)
 ################################################################
 # load data and data normalization
 ################################################################
-print(int(sys.argv[1]))
+print(sys.argv)
 
 
 M = int(sys.argv[1]) #5000
@@ -107,6 +107,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamm
 
 myloss = LpLoss(size_average=False)
 y_normalizer.cuda()
+t0 = default_timer()
 for ep in range(epochs):
     model.train()
     t1 = default_timer()
@@ -133,3 +134,5 @@ for ep in range(epochs):
 
     t2 = default_timer()
     print("Epoch : ", ep, " Epoch time : ", t2-t1, " Rel. Train L2 Loss : ", train_l2)
+
+print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)

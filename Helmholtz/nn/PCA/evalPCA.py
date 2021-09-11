@@ -76,7 +76,9 @@ if compute_input_PCA:
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
     
-    r_f = min(r_f, 500)
+    # r_f = min(r_f, 512)
+    r_f = 512
+    
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     f_hat_test = np.matmul(Uf.T,test_inputs)

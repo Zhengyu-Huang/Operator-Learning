@@ -50,7 +50,8 @@ if compute_input_PCA:
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
-    r_f = min(r_f, 500)
+    r_f = 512 # min(r_f, 512)
+    print("Energy is ", en_f[r_f - 1])
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     x_train_part = f_hat.T.astype(np.float32)
@@ -113,7 +114,7 @@ train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_trai
 
 learning_rate = 0.001
 
-epochs = 500
+epochs = 50
 step_size = 100
 gamma = 0.5
 
@@ -131,6 +132,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamm
 
 myloss = torch.nn.MSELoss(reduction='sum')
 y_normalizer.cuda()
+t0 = default_timer()
 for ep in range(epochs):
     model.train()
     t1 = default_timer()
@@ -157,4 +159,11 @@ for ep in range(epochs):
 
     t2 = default_timer()
     print("Epoch : ", ep, " Epoch time : ", t2-t1, " Train L2 Loss : ", train_l2)
+
+
+
+print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)
+
+
+
 

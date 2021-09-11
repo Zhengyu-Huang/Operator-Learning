@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#Submit this script with: sbatch calibrate_script
+
+#SBATCH --time=100:00:00   # walltime
+#SBATCH --ntasks=1         # number of processor cores (i.e. tasks)
+#SBATCH --nodes=1          # number of nodes
+#SBATCH --gres gpu:1
+#SBATCH --mem-per-cpu=64G
+#SBATCH -J "NN-10000-512"    # job name
+#SBATCH --output=10000-512.out  
+
+echo "NN-10000"
+
+M=10000
+N_neurons=512
+width=32
+
+cd PCA  
+python -u learnPCA.py      $M  $N_neurons > $M-$N_neurons-train.out
+python -u evalPCA.py       $M  $N_neurons > $M-$N_neurons-test.out
+
+cd ../FNO
+python -u learnFNO.py      $M  $width  > $M-$width-train.out 
+python -u evalFNO.py       $M  $width  > $M-$width-test.out 
+
+cd ../PARA
+python -u learnPARA.py     $M  $N_neurons > $M-$N_neurons-train.out
+python -u evalPARA.py      $M  $N_neurons > $M-$N_neurons-test.out
+
+cd ../DeepONet
+python -u learnDeepONet.py $M  $N_neurons > $M-$N_neurons-train.out
+python -u evalDeepONet.py  $M  $N_neurons > $M-$N_neurons-test.out

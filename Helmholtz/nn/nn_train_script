@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#Submit this script with: sbatch calibrate_script
+
+#SBATCH --time=100:00:00   # walltime
+#SBATCH --ntasks=1       # number of processor cores (i.e. tasks)
+#SBATCH --nodes=1         # number of nodes
+#SBATCH --gres gpu:1
+#SBATCH --mem-per-cpu=64G
+##SBATCH --mail-type=BEGIN
+##SBATCH --mail-type=END
+##SBATCH --mail-type=FAIL
+#SBATCH -J "PARA"    # job name
+##SBATCH --reservation=clima
+
+
+cd PARA
+python learnPARA.py 5000  100
+cd ../DeepONet
+python learnDeepONet.py 5000 100
+cd ../FNO
+python learnFNO.py 5000 32
+cd ../PCA  
+python learnPCA.py 5000 100

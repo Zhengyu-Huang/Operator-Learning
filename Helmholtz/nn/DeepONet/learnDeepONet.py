@@ -3,39 +3,30 @@ import numpy as np
 sys.path.append('../../../nn')
 from mynn import *
 from mydata import *
-from datetime import datetime
-
-import matplotlib as mpl 
-from matplotlib.lines import Line2D 
-# mpl.use('TkAgg')
-import matplotlib.pyplot as plt
-
-plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
-plt.rc("text", usetex=True)         # Crisp axis ticks
-plt.rc("font", family="serif")      # Crisp axis labels
-plt.rc("legend", edgecolor='none')  # No boxes around legends
-
-plt.rc("figure",facecolor="#ffffff")
-plt.rc("axes",facecolor="#ffffff",edgecolor="#000000",labelcolor="#000000")
-plt.rc("savefig",facecolor="#ffffff")
-plt.rc("text",color="#000000")
-plt.rc("xtick",color="#000000")
-plt.rc("ytick",color="#000000")
-
-color1 = 'tab:blue'
-color2 = 'tab:green'
-color3 = 'tab:orange'
+from Adam import Adam
 
 
-def colnorm(u):
-	return np.sqrt(np.sum(u**2,0))
+import operator
+from functools import reduce
+from functools import partial
+
+from timeit import default_timer
+
+
+
+torch.manual_seed(0)
+np.random.seed(0)
 
 
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
+M = int(sys.argv[1]) #5000
+N_neurons = int(sys.argv[2])
+
 N = 100
-M = 5000
+
+ntrain = M//2
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -99,19 +90,8 @@ for i in range(M//2):
 print("Input dim : ", r_f+2, " output dim : ", 1)
  
 
-N_neurons = 100
-layers = 4
-model = DeepONet(r_f, 2,  layers,  layers, N_neurons) 
-model.to(device)
 
-# model = torch.load("PCANet_"+str(N_neurons)+".model")
 
-loss_fn = torch.nn.MSELoss(reduction='sum')
-learning_rate = 1e-3
-optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
-
-loss_scale = 1000
-n_epochs = 5000
 
 x_train = torch.from_numpy(x_train)
 y_train = torch.from_numpy(y_train).unsqueeze(-1)
@@ -122,47 +102,59 @@ y_normalizer = UnitGaussianNormalizer(y_train)
 y_train = y_normalizer.encode(y_train)
 
 
-# y_pred = y_pred.to(device)
+################################################################
+# training and evaluation
+################################################################
 
-ds = DirectData(X=x_train, y=y_train)
-# ds = DataLoader(ds, batch_size=512, shuffle=True)
-ds = DataLoader(ds, batch_size=1024, shuffle=True)
+batch_size = 1024
+
+train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
 
 
-for epoch in range(n_epochs):
+learning_rate = 0.001
 
-    for ix, (_x, _y) in enumerate(ds):
-        _x, _y = _x.to(device), _y.to(device)
-        y_pred = model(_x)
-        loss = loss_fn(y_pred,_y)*loss_scale
-        
+epochs = 500
+step_size = 100
+gamma = 0.5
+
+
+
+
+layers = 4
+model = DeepONet(r_f, 2,  layers,  layers, N_neurons) 
+print(count_params(model))
+model.to(device)
+
+
+optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+
+myloss = torch.nn.MSELoss(reduction='sum')
+y_normalizer.cuda()
+for ep in range(epochs):
+    model.train()
+    t1 = default_timer()
+    train_l2 = 0
+    for x, y in train_loader:
+        x, y = x.cuda(), y.cuda()
+
+        batch_size_ = x.shape[0]
         optimizer.zero_grad()
+        out = model(x)
+        out = y_normalizer.decode(out)
+        y = y_normalizer.decode(y)
+
+        loss = myloss(out , y)
         loss.backward()
+
         optimizer.step()
-    # if epoch % 10 == 0:
-    print("[{}/{}], loss: {}, time {}".format(epoch, n_epochs, np.round(loss.item(), 3),datetime.now()))
-    torch.save(model, "DeepONetNet_"+str(N_neurons)+".model")
+        train_l2 += loss.item()
 
-	
-# save the model
-torch.save(model, "DeepONetNet_"+str(N_neurons)+".model")
+    torch.save(model, "DeepONetNet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model")
+    scheduler.step()
 
-# fig,ax = plt.subplots(figsize=(3,3))
-# fig.subplots_adjust(bottom=0.2,left = 0.15)
-# ax.plot(rel_err_train,lw=0.5,color=color1,label='training')
-# ax.plot(rel_err_test,lw=0.5,color=color2,label='test')
-# ax.legend()
-# plt.xlabel('data index')
-# plt.ylabel('Relative errors')
-# plt.savefig('LLS_errors.png',pad_inches=3)
-# plt.close()
+    train_l2/= ntrain
 
-# fig,ax = plt.subplots(figsize=(3,3))
-# fig.subplots_adjust(bottom=0.2,left = 0.15)
-# ax.semilogy(en_f,lw=0.5,color=color1,label='input')
-# ax.semilogy(en_g,lw=0.5,color=color2,label='output')
-# ax.legend()
-# plt.xlabel('index')
-# plt.ylabel('energy lost')
-# plt.savefig('training_PCA.png',pad_inches=3)
-# plt.close()
+    t2 = default_timer()
+    print("Epoch : ", ep, " Epoch time : ", t2-t1, " Train L2 Loss : ", train_l2)
+

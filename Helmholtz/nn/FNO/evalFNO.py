@@ -3,6 +3,12 @@
 This file is the Fourier Neural Operator for 2D problem such as the Darcy Flow discussed in Section 5.2 in the [paper](https://arxiv.org/pdf/2010.08895.pdf).
 """
 
+import sys
+sys.path.append('../../../nn')
+from mynn import *
+from mydata import UnitGaussianNormalizer
+from Adam import Adam
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -36,15 +42,17 @@ from functools import reduce
 from functools import partial
 
 from timeit import default_timer
-from utilities3 import *
 
-from Adam import Adam
 
 torch.manual_seed(0)
 np.random.seed(0)
 
 N = 100
 M = 5000
+ntrain = M//2
+ntest = M-M//2
+s = N+1
+
 N_theta = 100
 prefix = "../"  
 K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
@@ -220,9 +228,7 @@ y_train = y_normalizer.encode(y_train)
 
 
 
-ntrain = M//2
-ntest = M-M//2
-s = N+1
+
 
 x_train = x_train.reshape(ntrain,s,s,1)
 x_test = x_test.reshape(ntest,s,s,1)
@@ -232,7 +238,7 @@ y_train = y_train.reshape(ntrain,s,s,1)
 y_test = y_test.reshape(ntest,s,s,1)
 
 
-model = torch.load("FNO.model", map_location=device)
+model = torch.load("FNO_"+str(width)+"Nd_"+str(ntrain)+".model", map_location=device)
 
 # Training error
 rel_err_nn_train = np.zeros(M//2)

@@ -31,24 +31,24 @@ np.random.seed(0)
 
 
 
-batch_size = 20
-learning_rate = 0.001
-
-epochs = 500
-step_size = 100
-gamma = 0.5
-
-modes = 12
-width = 32
-
 
 
 ################################################################
 # load data and data normalization
 ################################################################
+print(int(sys.argv[1]))
+
+
+M = int(sys.argv[1]) #5000
+width = int(sys.argv[2])
 
 N = 100
-M = 5000
+ntrain = M//2
+ntest = M-M//2
+s = N+1
+
+
+
 N_theta = 100
 prefix = "../"  
 K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
@@ -73,10 +73,6 @@ y_normalizer = UnitGaussianNormalizer(y_train)
 y_train = y_normalizer.encode(y_train)
 
 
-ntrain = M//2
-ntest = M-M//2
-s = N+1
-
 x_train = x_train.reshape(ntrain,s,s,1)
 x_test = x_test.reshape(ntest,s,s,1)
 
@@ -85,12 +81,24 @@ y_train = y_train.reshape(ntrain,s,s,1)
 y_test = y_test.reshape(ntest,s,s,1)
 
 
-train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
-test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_test, y_test), batch_size=batch_size, shuffle=False)
 
 ################################################################
 # training and evaluation
 ################################################################
+batch_size = 20
+
+train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
+test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_test, y_test), batch_size=batch_size, shuffle=False)
+
+learning_rate = 0.001
+
+epochs = 500
+step_size = 100
+gamma = 0.5
+
+modes = 12
+
+
 model = FNO2d(modes, modes, width).cuda()
 print(count_params(model))
 
@@ -118,7 +126,7 @@ for ep in range(epochs):
         optimizer.step()
         train_l2 += loss.item()
 
-    torch.save(model, "FNO.model")
+    torch.save(model, "FNO_"+str(width)+"Nd_"+str(ntrain)+".model")
     scheduler.step()
 
     train_l2/= ntrain

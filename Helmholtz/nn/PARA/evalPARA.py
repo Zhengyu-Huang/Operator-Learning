@@ -3,6 +3,7 @@ import numpy as np
 sys.path.append('../../../nn')
 from mynn import *
 from mydata import *
+from Adam import Adam
 from datetime import datetime
 
 import matplotlib as mpl 
@@ -30,12 +31,11 @@ color3 = 'tab:orange'
 def colnorm(u):
 	return np.sqrt(np.sum(u**2,0))
 
-
-
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 N = 100
 M = 5000
+ntrain = M//2
 N_theta = 100
 prefix = "../"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
@@ -112,7 +112,7 @@ y_normalizer = UnitGaussianNormalizer(y_train)
 print("Input dim : ", r_f+2, " output dim : ", 1)
  
 N_neurons = 100
-model = torch.load("PARANet_"+str(N_neurons)+".model", map_location=device)
+model = torch.load("PARANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model", map_location=device)
 model.to(device)
 
 if torch.cuda.is_available():

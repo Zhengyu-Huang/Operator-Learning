@@ -232,7 +232,7 @@ class DeepONet(StructureNN):
         
         self.modus = self.__init_modules()
         self.params = self.__init_params()
-        # self.__initialize()
+
         
     def forward(self, x):
         x_branch, x_trunk = x[..., :self.branch_dim], x[..., -self.trunk_dim:]
@@ -244,6 +244,22 @@ class DeepONet(StructureNN):
         for i in range(1, self.trunk_depth):
             x_trunk = self.modus['TrActM{}'.format(i)](self.modus['TrLinM{}'.format(i)](x_trunk))
         return torch.sum(x_branch * x_trunk, dim=-1, keepdim=True) + self.params['bias']
+
+    def trunk_forward(self, x):
+        x_trunk = x[..., -self.trunk_dim:]
+        
+        for i in range(1, self.trunk_depth):
+            x_trunk = self.modus['TrActM{}'.format(i)](self.modus['TrLinM{}'.format(i)](x_trunk))
+        return x_trunk
+    
+    def branch_forward(self, x):
+        x_branch = x[..., :self.branch_dim]
+        
+        for i in range(1, self.branch_depth):
+            x_branch = self.modus['BrActM{}'.format(i)](self.modus['BrLinM{}'.format(i)](x_branch))
+        x_branch = self.modus['BrLinM{}'.format(self.branch_depth)](x_branch)
+        
+        return x_branch
         
     def __init_modules(self):
         modules = nn.ModuleDict()
@@ -266,6 +282,7 @@ class DeepONet(StructureNN):
             modules['TrLinM{}'.format(i)] = nn.Linear(self.width, self.width)
             modules['TrActM{}'.format(i)] = self.Act
         return modules
+
             
     def __init_params(self):
         params = nn.ParameterDict()
@@ -273,7 +290,58 @@ class DeepONet(StructureNN):
         return params
 
 
+class PCAONet(StructureNN):
+    '''PCA operator network.
+    Input:  [batch size, branch_dim]
+    Output: [batch size, field_size]
+    '''
 
+    def __init__(self, ind, outd, bases, layers=2, width=50, activation='relu', initializer='default'):
+        super(PCAONet, self).__init__()
+        self.ind = ind
+        self.outd = outd
+        self.layers = layers
+        self.width = width
+        self.activation = activation
+        self.bases = bases
+        assert(bases.shape[0] == outd)
+        
+        self.modus = self.__init_modules()
+        self.params = self.__init_params()
+        
+    def forward(self, x):
+        
+        for i in range(1, self.layers):
+            LinM = self.modus['LinM{}'.format(i)]
+            NonM = self.modus['NonM{}'.format(i)]
+            x = NonM(LinM(x))
+        x = self.modus['LinMout'](x)
+        x = torch.matmul(x , self.bases) + self.params['bias']
+        
+       
+        return x
+    
+    
+    def __init_modules(self):
+        modules = nn.ModuleDict()
+        if self.layers > 1:
+            modules['LinM1'] = nn.Linear(self.ind, self.width)
+            modules['NonM1'] = self.Act
+            for i in range(2, self.layers):
+                modules['LinM{}'.format(i)] = nn.Linear(self.width, self.width)
+                modules['NonM{}'.format(i)] = self.Act
+            modules['LinMout'] = nn.Linear(self.width, self.outd)
+        else:
+            modules['LinMout'] = nn.Linear(self.ind, self.outd)
+            
+        return modules
+        
+
+            
+    def __init_params(self):
+        params = nn.ParameterDict()
+        params['bias'] = nn.Parameter(torch.zeros([1]))
+        return params
 
 ################################################################
 # fourier neural operator

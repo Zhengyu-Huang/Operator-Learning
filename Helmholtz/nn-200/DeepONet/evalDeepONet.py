@@ -107,7 +107,7 @@ x_train = torch.from_numpy(x_train)
 y_train = torch.from_numpy(y_train).unsqueeze(-1)
 
 x_normalizer = UnitGaussianNormalizer(x_train)
-x_train = x_normalizer.encode(x_train)
+x_normalizer.encode_(x_train)
 y_normalizer = UnitGaussianNormalizer(y_train)
 # y_train = y_normalizer.encode(y_train)
 
@@ -156,7 +156,9 @@ for i in range(M-M//2):
     x_test[d_range , r_f + 1] = Y_upper 
 
 # x_normalizer.cpu()
-x_test = x_normalizer.encode(torch.from_numpy(x_test)) 
+x_test = torch.from_numpy(x_test)
+x_normalizer.encode_(x_test)
+
 # Test error
 rel_err_nn_test = np.zeros(M//2)
 for i in range(M-M//2):

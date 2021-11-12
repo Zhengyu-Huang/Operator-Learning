@@ -4,11 +4,19 @@ sys.path.append('../../../nn')
 from mynn import *
 from mydata import *
 from Adam import Adam
+
+
+import operator
+from functools import reduce
+from functools import partial
+
 from timeit import default_timer
+
 
 
 torch.manual_seed(0)
 np.random.seed(0)
+
 
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -42,10 +50,8 @@ if compute_input_PCA:
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
-    
-    # r_f = min(r_f, 512)
-
-    r_f = 512
+    r_f = 512 # min(r_f, 512)
+    print("Energy is ", en_f[r_f - 1])
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     x_train_part = f_hat.T.astype(np.float32)
@@ -70,48 +76,54 @@ assert(X[i, j] == i*dx and Y[i, j] == j*dx)
 X_upper = full2upper(X)
 Y_upper = full2upper(Y)
 N_upper = len(X_upper)
-x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
-y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
+x_train = np.zeros((M//2, r_f), dtype = np.float32)
+y_train = np.zeros((M//2, N_upper), dtype = np.float32)
 
 for i in range(M//2):
-    d_range = range(i*N_upper, (i + 1)*N_upper)
-    x_train[d_range , 0:r_f]   = x_train_part[i, :]
-    x_train[d_range , r_f]     = X_upper
-    x_train[d_range , r_f + 1] = Y_upper 
-    y_train[d_range] = full2upper(K[:, :, i])
-    
+    y_train[i] = full2upper(K[:, :, i])
+  
 
 
-print("Input dim : ", r_f+2, " output dim : ", 1)
+x_train = x_train_part
+XY_upper = np.vstack((X_upper, Y_upper)).T
+
+print("Input dim : ", r_f, " output dim : ", N_upper)
  
 
 
-x_train = torch.from_numpy(x_train)
-y_train = torch.from_numpy(y_train).unsqueeze(-1)
 
+XY_upper = torch.from_numpy(XY_upper.astype(np.float32)).to(device)
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train)
 
 x_normalizer = UnitGaussianNormalizer(x_train)
-x_train = x_normalizer.encode(x_train)
+x_normalizer.encode_(x_train)
 y_normalizer = UnitGaussianNormalizer(y_train)
-y_train = y_normalizer.encode(y_train)
+y_normalizer.encode_(y_train)
+
 
 ################################################################
 # training and evaluation
 ################################################################
 
-batch_size = 1024
+# batch_size = 1024
+
+batch_size = 20
 
 train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
 
 
 learning_rate = 0.001
 
-epochs = 50
+epochs = 2000
 step_size = 100
 gamma = 0.5
 
+
+
+
 layers = 4
-model = FNN(r_f + 2, 1, layers, N_neurons) 
+model = DeepFFONet(r_f, 2, XY_upper, layers,  layers, N_neurons) 
 print(count_params(model))
 model.to(device)
 
@@ -135,13 +147,14 @@ for ep in range(epochs):
         out = y_normalizer.decode(out)
         y = y_normalizer.decode(y)
 
+
         loss = myloss(out , y)
         loss.backward()
 
         optimizer.step()
         train_l2 += loss.item()
 
-    torch.save(model, "PARANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model")
+    torch.save(model, "DeepFFONetNet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model")
     scheduler.step()
 
     train_l2/= ntrain
@@ -152,3 +165,7 @@ for ep in range(epochs):
 
 
 print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)
+
+
+
+

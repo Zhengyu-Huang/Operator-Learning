@@ -2,17 +2,30 @@ import sys
 import numpy as np
 sys.path.append('../../../nn')
 from mynn import *
-from mydata import UnitGaussianNormalizer
+from mydata import *
 from Adam import Adam
+
+
+import operator
+from functools import reduce
+from functools import partial
+
 from timeit import default_timer
+
+
+
+torch.manual_seed(0)
+np.random.seed(0)
+
+
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-
-M = int(sys.argv[1])
+M = int(sys.argv[1]) #5000
 N_neurons = int(sys.argv[2])
 
 N = 100
+
 ntrain = M//2
 N_theta = 100
 prefix = "../"
@@ -24,7 +37,6 @@ cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
 acc = 0.99
 
 xgrid = np.linspace(0,1,N+1)
-xgrid = xgrid[:-1]
 dx    = xgrid[1] - xgrid[0]
 
 inputs  = cs
@@ -34,61 +46,86 @@ compute_input_PCA = True
 
 if compute_input_PCA:
     train_inputs = np.reshape(inputs[:,:,:M//2], (-1, M//2))
-    test_inputs  = np.reshape(inputs[:,:,M//2:M], (-1, M-M//2))
+    # test_inputs  = np.reshape(inputs[:,:,M//2:M], (-1, M-M//2))
     Ui,Si,Vi = np.linalg.svd(train_inputs)
     en_f= 1 - np.cumsum(Si)/np.sum(Si)
     r_f = np.argwhere(en_f<(1-acc))[0,0]
-    # r_f = min(r_f, 512)
-
-    r_f = 512
+    r_f = 512 # min(r_f, 512)
+    print("Energy is ", en_f[r_f - 1])
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
-    x_train = torch.from_numpy(f_hat.T.astype(np.float32))
+    x_train_part = f_hat.T.astype(np.float32)
 else:
     
     train_inputs =  theta[:M//2, :]
-    test_inputs  = theta[M//2:M, :]
+    # test_inputs  = theta[M//2:M, :]
     r_f = N_theta
-    x_train = torch.from_numpy(train_inputs.astype(np.float32))
+    x_train_part = train_inputs.astype(np.float32)
+
+del train_inputs
+del inputs
+del Ui, Vi, Uf, f_hat
+
+
+Y, X = np.meshgrid(xgrid, xgrid)
+# test
+i = 20
+j = 40
+assert(X[i, j] == i*dx and Y[i, j] == j*dx)
+
+X_upper = full2upper(X)
+Y_upper = full2upper(Y)
+N_upper = len(X_upper)
+x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
+y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
+
+for i in range(M//2):
+    d_range = range(i*N_upper, (i + 1)*N_upper)
+    x_train[d_range , 0:r_f]   = x_train_part[i, :]
+    x_train[d_range , r_f]     = X_upper
+    x_train[d_range , r_f + 1] = Y_upper 
+    y_train[d_range] = full2upper(K[:, :, i])
     
 
 
-train_outputs = np.reshape(outputs[:,:,:M//2], (-1, M//2))
-test_outputs  = np.reshape(outputs[:,:,M//2:M], (-1, M-M//2))
-Uo,So,Vo = np.linalg.svd(train_outputs)
-en_g = 1 - np.cumsum(So)/np.sum(So)
-r_g = np.argwhere(en_g<(1-acc))[0,0]
-Ug = Uo[:,:r_g]
-g_hat = np.matmul(Ug.T,train_outputs)
-y_train = torch.from_numpy(g_hat.T.astype(np.float32))
+print("Input dim : ", r_f+2, " output dim : ", 1)
+ 
 
+
+
+
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train).unsqueeze(-1)
 
 x_normalizer = UnitGaussianNormalizer(x_train)
-x_train = x_normalizer.encode(x_train)
+x_normalizer.encode_(x_train)
 y_normalizer = UnitGaussianNormalizer(y_train)
-y_train = y_normalizer.encode(y_train)
+y_normalizer.encode_(y_train)
 
-print("Input #bases : ", r_f, " output #bases : ", r_g)
- 
+
 ################################################################
 # training and evaluation
 ################################################################
+
 batch_size = 1024
 
 train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
 
+
 learning_rate = 0.001
 
-epochs = 500
+epochs = 200
 step_size = 100
 gamma = 0.5
 
 
 
+
 layers = 4
-model = FNN(r_f, r_g, layers, N_neurons) 
+model = DeepONet(r_f, 2,  layers,  layers, N_neurons) 
 print(count_params(model))
 model.to(device)
+
 
 optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
@@ -115,7 +152,7 @@ for ep in range(epochs):
         optimizer.step()
         train_l2 += loss.item()
 
-    torch.save(model, "PCANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model")
+    torch.save(model, "DeepONetNet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model")
     scheduler.step()
 
     train_l2/= ntrain
@@ -126,4 +163,7 @@ for ep in range(epochs):
 
 
 print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)
+
+
+
 

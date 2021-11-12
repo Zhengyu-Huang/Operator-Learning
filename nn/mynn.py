@@ -289,7 +289,86 @@ class DeepONet(StructureNN):
         params['bias'] = nn.Parameter(torch.zeros([1]))
         return params
 
+class DeepFFONet(StructureNN):
+    '''Deep full field operator network.
+    Input: [batch size, branch_dim + trunk_dim * Np]
+    Output: [batch size, 1]
+    '''
 
+    def __init__(self, branch_dim, trunk_dim, x_trunk, branch_depth=2, trunk_depth=3, width=50,
+                 activation='relu'):
+        super(DeepFFONet, self).__init__()
+        self.branch_dim = branch_dim
+        self.trunk_dim = trunk_dim
+        self.x_trunk = x_trunk
+        self.branch_depth = branch_depth
+        self.trunk_depth = trunk_depth
+        self.width = width
+        self.activation = activation
+        
+        self.modus = self.__init_modules()
+        self.params = self.__init_params()
+
+        
+    def forward(self, x):
+        x_branch, x_trunk = x[..., :self.branch_dim], self.x_trunk
+        # x_branch = self.modus['Branch'](x_branch)
+        for i in range(1, self.branch_depth):
+            x_branch = self.modus['BrActM{}'.format(i)](self.modus['BrLinM{}'.format(i)](x_branch))
+        x_branch = self.modus['BrLinM{}'.format(self.branch_depth)](x_branch)
+
+        for i in range(1, self.trunk_depth):
+            x_trunk = self.modus['TrActM{}'.format(i)](self.modus['TrLinM{}'.format(i)](x_trunk))
+        
+        
+        return torch.matmul(x_branch , x_trunk.T) + self.params['bias']
+
+    def trunk_forward(self):
+        x_trunk = self.x_trunk
+        
+        for i in range(1, self.trunk_depth):
+            x_trunk = self.modus['TrActM{}'.format(i)](self.modus['TrLinM{}'.format(i)](x_trunk))
+        return x_trunk
+    
+    def branch_forward(self, x):
+        x_branch = x[..., :self.branch_dim]
+        
+        for i in range(1, self.branch_depth):
+            x_branch = self.modus['BrActM{}'.format(i)](self.modus['BrLinM{}'.format(i)](x_branch))
+        x_branch = self.modus['BrLinM{}'.format(self.branch_depth)](x_branch)
+        
+        return x_branch
+        
+    def __init_modules(self):
+        modules = nn.ModuleDict()
+        # modules['Branch'] = FNN(self.branch_dim, self.width, self.branch_depth, self.width,
+        #                         self.activation, self.initializer)
+        if self.branch_depth > 1:
+            modules['BrLinM1'] = nn.Linear(self.branch_dim, self.width)
+            modules['BrActM1'] = self.Act
+            for i in range(2, self.branch_depth):
+                modules['BrLinM{}'.format(i)] = nn.Linear(self.width, self.width)
+                modules['BrActM{}'.format(i)] = self.Act
+            modules['BrLinM{}'.format(self.branch_depth)] = nn.Linear(self.width, self.width)
+        else:
+            modules['BrLinM{}'.format(self.branch_depth)] = nn.Linear(self.branch_dim, self.width)
+            
+
+        modules['TrLinM1'] = nn.Linear(self.trunk_dim, self.width)
+        modules['TrActM1'] = self.Act
+        for i in range(2, self.trunk_depth):
+            modules['TrLinM{}'.format(i)] = nn.Linear(self.width, self.width)
+            modules['TrActM{}'.format(i)] = self.Act
+        return modules
+
+            
+    def __init_params(self):
+        params = nn.ParameterDict()
+        params['bias'] = nn.Parameter(torch.zeros([1]))
+        return params
+    
+    
+    
 class PCAONet(StructureNN):
     '''PCA operator network.
     Input:  [batch size, branch_dim]

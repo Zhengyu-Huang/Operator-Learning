@@ -25,8 +25,8 @@ mutable struct Spectral_NS_Solver
 
     ν::Float64
 
-    fx::Array{Float64, 2}
-    fy::Array{Float64, 2}
+    fx::Union{Array{Float64, 2}, Nothing}
+    fy::Union{Array{Float64, 2}, Nothing}
     curl_f_hat::Array{ComplexF64, 2}
 
     ub::Float64
@@ -66,20 +66,20 @@ end
 #
 function Spectral_NS_Solver(mesh::Spectral_Mesh, ν::Float64;
     fx::Union{Array{Float64, 2}, Nothing} = nothing, fy::Union{Array{Float64, 2}, Nothing} = nothing, 
+    curl_f::Union{Array{Float64, 2}, Nothing} = nothing,
     u0::Union{Array{Float64, 2}, Nothing} = nothing, v0::Union{Array{Float64, 2}, Nothing} = nothing, 
-    ω0::Union{Array{Float64, 2}, Nothing} = nothing, ub::Union{Float64, Nothing} = nothing, vb::Union{Float64, Nothing} = nothing)    
+    ω0::Union{Array{Float64, 2}, Nothing} = nothing, 
+    ub::Union{Float64, Nothing} = nothing, vb::Union{Float64, Nothing} = nothing)    
     N_x, N_y = mesh.N_x, mesh.N_y
     
-    if fx === nothing
-        fx = zeros(Float64, N_x, N_y)
-    end
-    if fy === nothing
-        fy = zeros(Float64, N_x, N_y)
-    end
-
     curl_f_hat = zeros(ComplexF64, N_x, N_y)
-    Apply_Curl!(mesh, fx, fy, curl_f_hat) 
-   
+    if curl_f !== nothing
+        Trans_Grid_To_Spectral!(mesh, curl_f, curl_f_hat)
+    elseif (fx !== nothing && fy !== nothing)
+        Apply_Curl!(mesh, fx, fy, curl_f_hat)
+    else 
+        curl_f_hat .= 0.0
+    end
     
     
     u_hat = zeros(ComplexF64, N_x, N_y)
@@ -107,11 +107,9 @@ function Spectral_NS_Solver(mesh::Spectral_Mesh, ν::Float64;
         ω .= ω0
         ω_hat = zeros(ComplexF64, N_x, N_y)
         Trans_Grid_To_Spectral!(mesh, ω, ω_hat)
-        
-        
+
         UV_Spectral_From_Vor!(mesh, ω_hat, u_hat, v_hat, ub, vb)
-        
-        
+
         Trans_Spectral_To_Grid!(mesh, u_hat, u)
         Trans_Spectral_To_Grid!(mesh, v_hat, v)
     end

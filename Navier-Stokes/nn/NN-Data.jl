@@ -3,90 +3,52 @@ using Distributions
 using Random
 using SparseArrays
 using NPZ
-include("../src/Spectral-Navier-Stokes.jl");
 
+include("./Navier-Stokes-Force-Sol.jl");
 
-ν = 1.0/40                                      # viscosity
-N, L = 64, 2*pi                                 # resolution and domain size 
-ub, vb = 0.0, 0.0                               # background velocity 
-method="Crank-Nicolson"                         # RK4 or Crank-Nicolson
-N_t = 5000;                                     # time step
-T = 10.0;                                        # final time
-obs_ΔNx, obs_ΔNy, obs_ΔNt = 16, 16, 5000        #observation
+function Data_Generate()
+    N_data = 10
+    ν = 1.0/40                                      # viscosity
+    N, L = 64, 2*pi                                 # resolution and domain size 
+    N_t = 5000;                                     # time step
+    T = 10.0;                                        # final time
 
-plot_data = false
+    d=2.0
+    τ=3.0
+    # The forcing has N_θ terms
+    N_θ = 100
+    seq_pairs = Compute_Seq_Pairs(100)
 
-# The forcing has N_θ terms
-N_θ = 100
-seq_pairs = Compute_Seq_Pairs(Int64(N_θ/2))
-
-Random.seed!(42);
-N_data = 4000
-# θθ = rand(TruncatedNormal(0,1, -1, 1), N_data, N_θ)
-θθ = rand(Normal(0,1), N_data, N_θ)
-mesh = Spectral_Mesh(N, N, L, L)
-ωω = zeros(N,N, N_data)
-
-for i_d = 1:N_data
-    θ = θθ[i_d, :]
-    
-    # this is used for generating random initial condition
-    s_param = Setup_Param(ν, ub, vb,  
-        N, L,  
-        method, N_t,
-        obs_ΔNx, obs_ΔNy, obs_ΔNt, 
-        0,
-        100;
-        f = (x, y) -> (sin(4*y), 0))
-
-
-    ω0_ref = s_param.ω0_ref
-
-    solver = Spectral_NS_Solver(mesh, ν; fx = s_param.fx, fy = s_param.fy, ω0 = ω0_ref, ub = ub, vb = vb)  
-    # The forcing fx and fy are set to be zero, they are only used for pressure computation
-    # We specify the curl_f_hat directely (do not compute pressure)
-
-    #     curl_f = Initial_ω0_KL(mesh, θ, seq_pairs)
-    #     Trans_Grid_To_Spectral!(mesh, curl_f,  solver.curl_f_hat)
-    
-    curl_f = Initial_ω0_KL(mesh, θ, seq_pairs; τ = 3.0)
-    curl_f_hat = copy(solver.curl_f_hat)
-    Trans_Grid_To_Spectral!(mesh, curl_f,  curl_f_hat)
-    solver.curl_f_hat +=  curl_f_hat
-     
-    
-    if plot_data && i_d == 1
-        PyPlot.figure(figsize = (4,3))
-        Visual(mesh, solver.ω, "ω")
-        PyPlot.title("Initial ω")
+    Random.seed!(42);
+    θf = rand(Normal(0,1), N_data, N_θ)
+    curl_f = zeros(N, N, N_data)
+    for i = 1:N_data
+        curl_f[:,:, i] .= generate_ω0(L, N, θf[i,:], seq_pairs, d, τ)
     end
-    
 
+    θω = rand(Normal(0,1), N_θ)
+    ω0 = generate_ω0(L, N, θω, seq_pairs, d, τ)
 
-    Δt = T/N_t 
-    for i = 1:N_t
-        Solve!(solver, Δt, method)
-        if plot_data && i == N_t
-            PyPlot.figure(figsize = (4,3))
-            Visual(mesh, curl_f, "curl_f")
-            PyPlot.title("∇×f")
-            
-            Update_Grid_Vars!(solver)
-            PyPlot.figure(figsize = (4,3))
-            Visual(mesh, solver.ω, "ω")
-            PyPlot.title("ω")
-        end
+    # Define caller function
+    g_(x::Matrix{FT}) where FT<:Real = 
+        NS_Solver(x, ω0;  ν = ν, N_t = N_t, T = T)
+
+    curl_f = curl_f
+
+    ω_tuple = []
+    for i = 1:N_data
+        push!(ω_tuple, g_(curl_f[:,:,i])) # Outer dim is params iterator
     end
-    
-    Update_Grid_Vars!(solver)
-    @info "data ", i_d, " / ", N_data, " norm : ", norm(solver.ω)
-    ωω[:, : , i_d] .= solver.ω
+
+    ω_field = zeros(N, N, N_data)
+    for i = 1:N_data
+        ω_field[:,:, i] = ω_tuple[i]
+    end
+
+    npzwrite("Random_NS_theta_$(N_θ).npy",  θf)
+    npzwrite("Random_NS_omega_$(N_θ).npy",  ω_field)
+    npzwrite("Random_NS_curl_f_$(N_θ).npy", curl_f)
+
 end
 
-
-
-
-
-npzwrite("NS_theta_$(N_θ).npy", θθ)
-npzwrite("NS_omega_$(N_θ).npy", ωω)
-
+Data_Generate()

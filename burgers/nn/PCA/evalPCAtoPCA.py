@@ -29,25 +29,40 @@ color3 = 'tab:orange'
 def colnorm(u):
 	return np.sqrt(np.sum(u**2,0))
 
-N = 256
-K = 200
+# N = 256
+# K = 200
+# M = 2048
+
+# xgrid = np.linspace(0,1,N+1)
+# xgrid = xgrid[:-1]
+# dx    = xgrid[1] - xgrid[0]
+
+# # burgers param and data
+# nu      = 0.01
+# data    = np.load('../../data/N'+str(N)+'_K'+str(K)+'_M'+str(M)+'.npz')
+# inputs  = data["inputs"]
+# outputs = data["outputs"]
+
+T = 2
+N = 128
+K = 800
 M = 2048
+data    = np.load('../../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz')
+
+traj = data['traj']
+theta = data['data_theta']
+inputs  = traj[:,0,:]
+outputs = traj[:,-1,:]
 
 xgrid = np.linspace(0,1,N+1)
 xgrid = xgrid[:-1]
 dx    = xgrid[1] - xgrid[0]
 
-# burgers param and data
-nu      = 0.01
-data    = np.load('../../data/N'+str(N)+'_K'+str(K)+'_M'+str(M)+'.npz')
-inputs  = data["inputs"]
-outputs = data["outputs"]
+train_inputs = inputs[:,:M//2]
+test_inputs  = inputs[:,M//2:]
 
-train_inputs = inputs[:,:M/2]
-test_inputs  = inputs[:,M/2:]
-
-train_outputs = outputs[:,:M/2]
-test_outputs  = outputs[:,M/2:]
+train_outputs = outputs[:,:M//2]
+test_outputs  = outputs[:,M//2:]
 
 Ui,Si,Vi = np.linalg.svd(train_inputs)
 en_f= 1 - np.cumsum(Si)/np.sum(Si)
@@ -81,7 +96,7 @@ mean_rel_err_test = np.mean(rel_err_test)
 x_train = torch.from_numpy(f_hat.T.astype(np.float32))
 y_train = torch.from_numpy(g_hat.T.astype(np.float32))
 
-N_neurons = 20
+N_neurons = 50
 
 if N_neurons == 20:
     DirectNet = DirectNet_20
@@ -95,14 +110,26 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(),lr=learning_rate,weight_decay=1e-4)
 
 y_pred_train = model(x_train).detach().numpy().T
-rel_err_nn_train = np.sum((y_pred_train-g_hat)**2,0)/np.sum(g_hat**2,0)
+
+rel_err_nn_train = np.zeros(M//2)
+for i in range(M//2):
+    rel_err_nn_train[i] = np.linalg.norm(train_outputs[:, i]  - np.matmul(Ug, y_pred_train[:, i]))/np.linalg.norm(train_outputs[:, i])
 mre_nn_train = np.mean(rel_err_nn_train)
+
+# rel_err_nn_train = np.sum((y_pred_train-g_hat)**2,0)/np.sum(g_hat**2,0)
+# mre_nn_train = np.mean(rel_err_nn_train)
 
 f_hat_test = np.matmul(Uf.T,test_inputs)
 y_pred_test  = model(torch.from_numpy(f_hat_test.T.astype(np.float32))).detach().numpy().T
-rel_err_nn_test = np.sum((y_pred_test-g_hat_test)**2,0)/np.sum(g_hat_test**2,0)
+
+rel_err_nn_test = np.zeros(M//2)
+for i in range(M//2):
+    rel_err_nn_test[i] = np.linalg.norm(test_outputs[:, i]  - np.matmul(Ug, y_pred_test[:, i]))/np.linalg.norm(test_outputs[:, i])
 mre_nn_test = np.mean(rel_err_nn_test)
 
+# rel_err_nn_test = np.sum((y_pred_test-g_hat_test)**2,0)/np.sum(g_hat_test**2,0)
+# mre_nn_test = np.mean(rel_err_nn_test)
+print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
 # loss_scale = 1000
 # n_epochs = 500000
 # for epoch in range(n_epochs):
@@ -122,12 +149,12 @@ mre_nn_test = np.mean(rel_err_nn_test)
 
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
-ax.plot(rel_err_nn_train,lw=0.5,color=color1,label='training')
-ax.plot(rel_err_nn_test,lw=0.5,color=color2,label='test')
+ax.semilogy(rel_err_nn_train,lw=0.5,color=color1,label='training')
+ax.semilogy(rel_err_nn_test,lw=0.5,color=color2,label='test')
 ax.legend()
 plt.xlabel('data index')
 plt.ylabel('Relative errors')
-plt.savefig('NN20_errors.png',pad_inches=3)
+plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 ind = np.argmax(rel_err_nn_test)
@@ -141,7 +168,7 @@ ax.plot(xgrid,np.matmul(Ug,y_pred_test[:,ind]),lw=0.5,color=color3,label="NN u(T
 ax.legend()
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
-plt.savefig('worst_case_test.png',pad_inches=3)
+plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 # for ind in np.random.randint(0,1024,(5,)):
@@ -166,7 +193,7 @@ ax.plot(xgrid,np.matmul(Ug,y_pred_train[:,ind]),lw=0.5,color=color3,label="NN u(
 ax.legend()
 plt.xlabel('$x$')
 plt.ylabel('u(x)')
-plt.savefig('worst_case_train.png',pad_inches=3)
+plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 

@@ -1,7 +1,7 @@
 import numpy as np 
 import matplotlib as mpl 
 from matplotlib.lines import Line2D 
-mpl.use('TkAgg')
+# mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 import scipy
 import scipy.linalg as sla
@@ -90,8 +90,10 @@ alpha = 2.5
 
 grf = GaussianRandomField1D(tau, alpha, bc=2)
 
-M = 2048
+M = 4096
 traj = np.zeros((N,K+1,M))
+data_theta = np.zeros((N+1,M))
+
 for m in range(M):
     theta = np.random.standard_normal(N+1)
     # u0 = np.squeeze(np.matmul(LC,theta))
@@ -114,5 +116,6 @@ for m in range(M):
     # inputs[:,m] = u0
     # outputs[:,m] = u[:,-1]
     traj[:,:,m] = u
+    data_theta[:, m] = theta
 
-np.savez('../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz',traj = traj, t= t)
+np.savez('../data/T'+str(int(T))+'_N'+str(N)+'_K'+str(K)+'_M'+str(M)+'_traj2.npz',traj = traj, t= t, data_theta =data_theta)

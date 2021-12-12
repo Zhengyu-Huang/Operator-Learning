@@ -36,6 +36,13 @@ function generate_data(N_x::IT, N_KL::IT, M::IT; u::FT = 0.5, d::FT=1.0, τ::FT=
         end
     end
 
+    p_ind         = a0s .> 0
+    a0s[p_ind]   .=  1.0
+    a0s[.~p_ind] .= -1.0
+    
+    p_ind         = aTs .> 0
+    aTs[p_ind]   .=  1.0
+    aTs[.~p_ind] .= -1.0
 
     return θ0s, a0s, aTs
 end

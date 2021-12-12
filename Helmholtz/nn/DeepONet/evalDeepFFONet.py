@@ -32,13 +32,16 @@ color3 = 'tab:orange'
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-M = int(sys.argv[1]) #5000
+M = int(sys.argv[1])
 N_neurons = int(sys.argv[2])
+layers    = int(sys.argv[3])
+batch_size = int(sys.argv[4])
+
 
 N = 100
 ntrain = M//2
 N_theta = 100
-prefix = "../"
+prefix = "/central/scratch/dzhuang/Helmholtz_data/"
 theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
 K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
 cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
@@ -119,7 +122,7 @@ if torch.cuda.is_available():
 print("Input dim : ", r_f+2, " output dim : ", N_upper)
  
 
-model = torch.load("DeepFFONetNet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model", map_location=device)
+model = torch.load("DeepFFONetNet_" + str(N_neurons) + "_" + str(layers) + "Nd_" + str(ntrain) + ".model")
 model.to(device)
 
 

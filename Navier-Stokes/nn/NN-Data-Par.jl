@@ -7,7 +7,7 @@
 @everywhere include("./Navier-Stokes-Force-Sol.jl");
 
 function Data_Generate()
-    N_data = 20000
+    N_data = 40000
     ν = 1.0/40                                      # viscosity
     N, L = 64, 2*pi                                 # resolution and domain size 
     N_t = 10000;                                     # time step

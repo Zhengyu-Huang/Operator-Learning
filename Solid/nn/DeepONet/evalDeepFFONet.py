@@ -81,8 +81,6 @@ else:
     
     print("must use compute_input_PCA")
     
-del inputs
-del Ui, Vi, Uf, f_hat
 
 # Y, X = np.meshgrid(xgrid, xgrid)
 # # test
@@ -131,19 +129,6 @@ for i in range(M//2):
 mre_nn_train = np.mean(rel_err_nn_train)
 
 
-# ####### worst error plot
-# i = np.argmax(rel_err_nn_train)
-# K_train_pred = np.reshape(K_train_pred_upper[i,:], (N,N))
-# fig,ax = plt.subplots(ncols=3, figsize=(9,3))
-# vmin, vmax = K_train[:,:,i].min(), K_train[:,:,i].max()
-# ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N,N)),  shading='gouraud')
-# ax[1].pcolormesh(X, Y, K_train_pred, shading='gouraud', vmin=vmin, vmax =vmax)
-# ax[2].pcolormesh(X, Y, K_train[:,:,i], shading='gouraud', vmin=vmin, vmax =vmax)
-# plt.xlabel('x')
-# plt.ylabel('y')
-# plt.tight_layout()
-# plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
-# plt.close()
 
 
 # del x_train,  K_train
@@ -158,20 +143,6 @@ for i in range(M-M//2):
     rel_err_nn_test[i] =  np.linalg.norm(K_test_pred[i, :] - K_test[:, i])/np.linalg.norm(K_test[:, i])
 mre_nn_test = np.mean(rel_err_nn_test)
 
-# ####### worst error plot
-# i = np.argmax(rel_err_nn_test)
-# K_test_pred = np.reshape(K_test_pred_upper[i,:], (N,N))
-# fig,ax = plt.subplots(ncols=3, figsize=(9,3))
-# vmin, vmax = K_test[:,:,i].min(), K_test[:,:,i].max()
-# ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N,N)),  shading='gouraud')
-# ax[1].pcolormesh(X, Y, K_test_pred, shading='gouraud', vmin=vmin, vmax =vmax)
-# ax[2].pcolormesh(X, Y, K_test[:,:,i], shading='gouraud', vmin=vmin, vmax =vmax)
-# plt.xlabel('x')
-# plt.ylabel('y')
-# plt.tight_layout()
-# plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
-# plt.close()
-
 
 fig,ax = plt.subplots(figsize=(3,3))
 fig.subplots_adjust(bottom=0.2,left = 0.15)
@@ -185,3 +156,18 @@ plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
+
+
+#########################################
+# save smallest, medium, largest
+test_input_save  = np.zeros((inputs.shape[0],  3))
+test_output_save = np.zeros((outputs.shape[0],  6))
+for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)[len(rel_err_nn_test)//2], np.argmax(rel_err_nn_test)]):
+    test_input_save[:, i]  = inputs[:, M//2 + ind]
+    # truth
+    test_output_save[:, i] = outputs[:, M//2 + ind]
+    # predict
+    test_output_save[:, i + 3] =  K_test_pred[ind, :]
+
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_input_save.npy",  test_input_save)
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_output_save.npy", test_output_save)

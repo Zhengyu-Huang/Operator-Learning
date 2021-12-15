@@ -46,6 +46,8 @@ theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")
 K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
 cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
 
+
+
 K_train = K[:, :, :M//2]
 K_test = K[:, :, M//2:M]
 acc = 0.99
@@ -82,9 +84,7 @@ else:
     x_train_part = train_inputs.astype(np.float32)
     x_test_part = test_inputs.astype(np.float32)
 
-    
-del inputs
-del Ui, Vi, Uf, f_hat
+
 
 Y, X = np.meshgrid(xgrid, xgrid)
 # test
@@ -194,3 +194,22 @@ plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
 print("NN: ", N_neurons, "rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
+
+
+
+#########################################
+# save smallest, medium, largest
+test_input_save  = np.zeros((N+1,  N+1, 3))
+test_output_save = np.zeros((N+1,  N+1, 6))
+for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)[len(rel_err_nn_test)//2], np.argmax(rel_err_nn_test)]):
+    test_input_save[:, :, i] = inputs[:, :, M//2 + ind]
+    # truth
+    test_output_save[:, :, i] = outputs[:, :, M//2 + ind]
+    # predict
+    K_test_pred = upper2full_1(K_test_pred_upper[ind,:])
+    test_output_save[:, :, i + 3] =  K_test_pred
+
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_input_save.npy", test_input_save)
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_output_save.npy", test_output_save)
+
+

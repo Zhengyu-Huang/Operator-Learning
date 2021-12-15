@@ -60,6 +60,8 @@ prefix = "/central/scratch/dzhuang/Helmholtz_data/"
 cs = np.load(prefix+"Random_NS_curl_f_" + str(N_theta) + ".npy") 
 K = np.load(prefix+"Random_NS_omega_" + str(N_theta) + ".npy")
 
+inputs = np.copy(cs)
+outputs = np.copy(K)
 
 xgrid = np.linspace(0,2*np.pi*(1 - 1.0/N), N)
 dx    = xgrid[1] - xgrid[0]
@@ -179,6 +181,23 @@ plt.savefig('NN_errors%d.png' %(width),pad_inches=3)
 plt.close()
 
 print("NN: rel train error: ", mre_nn_train, "rel test error ", mre_nn_test)
+
+
+#########################################
+# save smallest, medium, largest
+test_input_save  = np.zeros((N, N, 3))
+test_output_save = np.zeros((N, N, 6))
+for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)[len(rel_err_nn_test)//2], np.argmax(rel_err_nn_test)]):
+    test_input_save[:, :, i] = inputs[:, :, M//2 + ind]
+    # truth
+    test_output_save[:, :, i] = outputs[:, :, M//2 + ind]
+    # predict
+    test_output_save[:, :, i + 3] = y_normalizer.decode(model(x_test[ind:ind+1, :, :, :].to(device))).detach().cpu().numpy()[0, :,:, 0]
+    
+    
+np.save(str(ntrain) + "_" + str(width) + "_test_input_save.npy", test_input_save)
+np.save(str(ntrain) + "_" + str(width) + "_test_output_save.npy", test_output_save)
+
 
 
 

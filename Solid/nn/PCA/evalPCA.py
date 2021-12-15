@@ -153,6 +153,28 @@ plt.tight_layout()
 plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
 plt.close()
 
+
+
+#########################################
+# save smallest, medium, largest
+test_input_save  = np.zeros((inputs.shape[0],  3))
+test_output_save = np.zeros((outputs.shape[0],  6))
+for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)[len(rel_err_nn_test)//2], np.argmax(rel_err_nn_test)]):
+    test_input_save[:, i]  = inputs[:, M//2 + ind]
+    # truth
+    test_output_save[:, i] = outputs[:, M//2 + ind]
+    # predict
+    test_output_save[:, i + 3] =  np.matmul(Ug, y_pred_test[:, ind])
+
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_input_save.npy",  test_input_save)
+np.save(str(ntrain) + "_" + str(N_neurons) + "_test_output_save.npy", test_output_save)
+
+
+
+
+
+
+
 '''
 ind = np.argmax(rel_err_nn_test)
 Y, X = np.meshgrid(xgrid, xgrid)

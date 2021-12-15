@@ -29,7 +29,7 @@ function input_plot(data, file_name)
     fig = figure()
     
     pcolormesh(X, Y, data,  shading="gouraud")
-
+    colorbar()
     fig.tight_layout()
     fig.savefig(file_name)
 end
@@ -45,7 +45,7 @@ function output_plot(data, file_name)
     fig = figure()
     
     pcolormesh(X, Y, data,  shading="gouraud")
-    
+    colorbar()
     fig.tight_layout()
     fig.savefig(file_name)
 end

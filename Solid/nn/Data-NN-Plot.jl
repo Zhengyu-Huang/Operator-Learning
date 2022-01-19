@@ -277,7 +277,7 @@ row_ids = [1,2,3,4]
 
 N_Data = [156, 312, 625, 1250, 2500, 5000, 10000, 20000]
 for i = 1:4   
-    ax[i].loglog(N_Data, 0.4*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa")
+    ax[i].loglog(N_Data, 0.4*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
     ax[i].text(300,0.32,"1/√N",color="#bababa",fontsize=22)
     ax[i].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=(0,(1,1)), marker = markers[1], fillstyle="none",      label =  nns[1]  )
     ax[i].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=(0,(1,1)), marker = markers[2], fillstyle="none",      label =  nns[2]  )

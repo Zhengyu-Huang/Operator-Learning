@@ -3,13 +3,15 @@ using PyPlot
 include("../../nn/mynn.jl")
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
-    mysize = 20
+    mysize = 22
     font0 = Dict(
-    "font.size" => mysize,
-    "axes.labelsize" => mysize,
+    "font.size" => 30,          # title
+    "axes.labelsize" => 26, # axes labels
     "xtick.labelsize" => mysize,
     "ytick.labelsize" => mysize,
     "legend.fontsize" => mysize,
+    "lines.linewidth" => 3,
+    "lines.markersize" =>10,
     )
 merge!(rcParams, font0)
 
@@ -222,56 +224,94 @@ FNO_Data =
 
 # width
 nns = ["PCA-Net", "DeepO-Net", "PARA-Net", "FNO"]
-colors = ["C0","C1", "C2", "C3"]
+sizes = [L"w = 16\,\,/\,\,d_f = 2",L"w = 64 \,\,/\,\ d_f = 4",L"w = 128 \,\,/\,\ d_f = 8",L"w = 256 \,\,/\,\ d_f = 16"]
+colors = ["#3A637B", "#C4A46B", "#FF6917", "#D44141" ] # colorblind friendly pallet https://davidmathlogic.com/colorblind/#%233A637B-%23C4A46B-%23FF6917-%23D44141
 markers = ["o", "s", "^", "*"]
 linestyle = ["dotted", "-.", "--", "-", ]
 
 fig, ax = PyPlot.subplots(ncols = 4, sharex=false, sharey=true, figsize=(24,6))
 for i = 1:4
-    ax[1].plot(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = "black", linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(PCA_Data[(i+3)*5+1, 1])))
-    ax[2].plot(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = "black", linestyle=linestyle[i], marker = markers[i], fillstyle="none", label =  "N = "*string(Int(DeepONet_Data[(i+3)*5+1, 1])))
+    ax[1].plot(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(PCA_Data[(i+3)*5+1, 1])))
+    ax[2].plot(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[i], fillstyle="none", label =  "N = "*string(Int(DeepONet_Data[(i+3)*5+1, 1])))
     if i < 4
-        ax[3].plot(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = "black", linestyle=linestyle[i], marker = markers[i], fillstyle="none",     label =  "N = "*string(Int(PARA_Data[(i+3)*5+1, 1]))  )
+        ax[3].plot(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[i], fillstyle="none",     label =  "N = "*string(Int(PARA_Data[(i+3)*5+1, 1]))  )
     end
-    ax[4].plot(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = "black", linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(FNO_Data[(i+3)*5+1, 1]))  )
+    ax[4].plot(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(FNO_Data[(i+3)*5+1, 1]))  )
 end
+
 
 for i = 1:4
     ax[i].title.set_text(nns[i])   
+    ax[i].spines["top"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["bottom"].set_color("#808080")
+    ax[i][:xaxis][:set_tick_params](colors="#808080")
+    ax[i][:yaxis][:set_tick_params](colors="#808080")
 end
-ax[1].legend()
+ax[1].legend(frameon=false,handlelength=3.4)
+ax[1].set_ylabel("Test error")
+
+i=1
+ax[1].set_xticks(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[1].set_xlabel("Network width",labelpad=20)
+ax[2].set_xticks(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[2].set_xlabel("Network width",labelpad=20)
+ax[3].set_xticks(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[3].set_xlabel("Network width",labelpad=20)
+ax[4].set_xticks(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[4].set_xlabel("Lifting dimension",labelpad=20)
 
 plt.tight_layout()
 plt.savefig("NS-Width-Error.pdf")
-
+plt.close()
 
 
 
 ## Data vs Error
-fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(24,6))
-nns = ["PCA-Net", "DeepO-Net", "PARA-Net", "FNO"]
-colors = ["C0","C1", "C2", "C3"]
-markers = ["o", "s", "^", "*"]
-linestyle = ["--", "-.", "-", "dotted"]
-
+fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(24,6.5))
 row_ids = [1,2,3,4]
-# small
-
-for i = 1:4   
-    N_Data = [156, 312, 625, 1250, 2500, 5000, 10000, 20000]
-    ax[i].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=linestyle[4], marker = markers[1], fillstyle="none",      label =  nns[1]  )
-    ax[i].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=linestyle[4], marker = markers[2], fillstyle="none",      label =  nns[2]  )
-    ax[i].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=linestyle[4], marker = markers[3], fillstyle="none",      label =  nns[3]  )
-    ax[i].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=linestyle[4], marker = markers[4], fillstyle="none",      label =  nns[4]  )
-    
-    ax[i].loglog(N_Data, 0.1*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "black",    label =  "1/√N")
+plot2_yticks = [1e-2, 1e-1, 1, 10]
+N_Data = [156, 312, 625, 1250, 2500, 5000, 10000, 20000]
+for i = 1:3 
+    ax[i].loglog(N_Data, 0.1*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
+    ax[i].text(11000,0.015,"1/√N",color="#bababa",fontsize=22)
+    lh1 = ax[i].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=(0,(1,1)), marker = markers[1], fillstyle="none")
+    lh2 = ax[i].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=(0,(1,1)), marker = markers[2], fillstyle="none")
+    lh3 = ax[i].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none" )
+    lh4 = ax[i].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none" )
 end
-ax[1].legend()
+ax[4].loglog(N_Data, 0.1*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
+ax[4].text(11000,0.015,"1/√N",color="#bababa",fontsize=22)
+ax[4].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=(0,(1,1)), marker = markers[1], fillstyle="none",      label =  nns[1]  )
+ax[4].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=(0,(1,1)), marker = markers[2], fillstyle="none",      label =  nns[2]  )
+ax[4].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none",      label =  nns[3]  )
+ax[4].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none",      label =  nns[4]  )
 
-plt.tight_layout()
+for i = 1:4
+    ax[i].set_title(sizes[i],pad=50)
+    ax[i].spines["top"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["bottom"].set_color("#808080")
+    ax[i].set_xticks(N_Data[2:2:end])
+    ax[i].set_xticklabels(N_Data[2:2:end])
+    ax[i].set_yticks(plot2_yticks)
+
+    ax[i][:xaxis][:set_tick_params](colors="#808080")
+    ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
+    ax[i][:yaxis][:set_tick_params](colors="#808080")
+    ax[i][:yaxis][:set_tick_params](which="minor",left=false) # remove minor ytick labels?
+    ax[i].set_xlabel(latexstring("Training data ",L"N"),labelpad=20)
+end
+ax[1].set_yticklabels(plot2_yticks)
+ax[1].set_ylabel("Test error")
+
+fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.87),ncol=4,frameon=false)
+
 plt.tight_layout()
 plt.savefig("NS-Data-Error.pdf")
-
+plt.close()
 
 
 
@@ -299,20 +339,30 @@ for i = 1:size(FNO_Data)[1]
 end
 
 fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(24,6))
-
-
 for i = 1:4
-    ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[4], marker = markers[1], fillstyle="none",      label =  nns[1]  )
-    ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[4], marker = markers[2], fillstyle="none", label =  nns[2]  )
+    ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[1], fillstyle="none",      label =  nns[1]  )
+    ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[2], fillstyle="none", label =  nns[2]  )
     
     if i < 4
-        ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[4], marker = markers[3], fillstyle="none",     label =  nns[3]  )
+        ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[3], fillstyle="none",     label =  nns[3]  )
     end
     
-    ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[4], marker = markers[4], fillstyle="none",      label =  nns[4]  )
- ax[i].title.set_text("N = "*string(Int(FNO_Data[(i+3)*5+1, 1])))   
+    ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none",      label =  nns[4]  )
+    ax[i].title.set_text(L"N = "*string(Int(FNO_Data[(i+3)*5+1, 1])))   
 end
-ax[1].legend()
+for i = 1:4
+    ax[i].spines["top"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["bottom"].set_color("#808080")
+    ax[i][:xaxis][:set_tick_params](colors="#808080")
+    ax[i][:yaxis][:set_tick_params](colors="#808080")
+    ax[i].set_xticks([1e6, 1e8,1e10])
+    ax[i].set_xticklabels([L"10^6",L"10^8",L"10^10"])
+    ax[i].set_xlabel("Evaluation complexity",labelpad=20)
+end
+ax[3].legend(frameon=false,handlelength=0)
+ax[1].set_ylabel("Test error")
 
 plt.tight_layout()
 plt.savefig("NS-Cost-Error.pdf")

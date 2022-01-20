@@ -193,10 +193,10 @@ for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)
     # truth
     test_output_save[:, :, i] = outputs[:, :, M//2 + ind]
     # predict
-    test_output_save[:, :, i + 3] =  y_normalizer.decode(model(x_test[ind:ind+1, :, :, :].to(device))).detach().cpu().numpy()
+    test_output_save[:, :, i + 3] =  y_normalizer.decode(model(x_test[ind:ind+1, :, :, :].to(device))).detach().cpu().numpy()[0,:,:,0]
 
-np.save(str(ntrain) + "_" + str(N_neurons) + "_test_input_save.npy", test_input_save)
-np.save(str(ntrain) + "_" + str(N_neurons) + "_test_output_save.npy", test_output_save)
+np.save(str(ntrain) + "_" + str(width) + "_test_input_save.npy", test_input_save)
+np.save(str(ntrain) + "_" + str(width) + "_test_output_save.npy", test_output_save)
 
 
 

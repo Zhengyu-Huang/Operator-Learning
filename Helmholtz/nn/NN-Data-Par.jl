@@ -8,7 +8,7 @@
 function Data_Generate()
 
 
-    N_data = 20000
+    N_data = 40000
     N_θ = 100
     ne=100
     seed = 123

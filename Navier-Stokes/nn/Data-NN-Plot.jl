@@ -252,13 +252,13 @@ ax[1].set_ylabel("Test error")
 
 i=1
 ax[1].set_xticks(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[1].set_xlabel("Network width",labelpad=20)
+ax[1].set_xlabel("Network width "*L"w",labelpad=20)
 ax[2].set_xticks(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[2].set_xlabel("Network width",labelpad=20)
+ax[2].set_xlabel("Network width "*L"w",labelpad=20)
 ax[3].set_xticks(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[3].set_xlabel("Network width",labelpad=20)
+ax[3].set_xlabel("Network width "*L"w",labelpad=20)
 ax[4].set_xticks(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[4].set_xlabel("Lifting dimension",labelpad=20)
+ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=20)
 
 plt.tight_layout()
 plt.savefig("NS-Width-Error.pdf")
@@ -279,8 +279,9 @@ for i = 1:3
     lh3 = ax[i].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none" )
     lh4 = ax[i].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none" )
 end
-ax[4].loglog(N_Data, 0.1*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
-ax[4].text(11000,0.015,"1/√N",color="#bababa",fontsize=22)
+i = 4
+ax[4].loglog(N_Data, 0.08*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
+ax[4].text(11000,0.012,"1/√N",color="#bababa",fontsize=22)
 ax[4].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=(0,(1,1)), marker = markers[1], fillstyle="none",      label =  nns[1]  )
 ax[4].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=(0,(1,1)), marker = markers[2], fillstyle="none",      label =  nns[2]  )
 ax[4].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none",      label =  nns[3]  )
@@ -353,7 +354,7 @@ for i = 1:4
     ax[i][:xaxis][:set_tick_params](colors="#808080")
     ax[i][:yaxis][:set_tick_params](colors="#808080")
     ax[i].set_xticks([1e6, 1e8,1e10])
-    ax[i].set_xticklabels([L"10^6",L"10^8",L"10^10"])
+    ax[i].set_xticklabels([L"10^6",L"10^8",L"10^{10}"])
     ax[i].set_xlabel("Evaluation complexity",labelpad=20)
 end
 ax[3].legend(frameon=false,handlelength=0)

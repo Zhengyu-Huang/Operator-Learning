@@ -15,7 +15,7 @@ function input_plot(data, file_name)
     xx = LinRange(0, L, N_x)
     
     fig = figure()
-    plot(xx, data, "--o", fillstyle="none", color="C0")
+    plot(xx, data, "--o", fillstyle="none",markersize=6, color="#a1a1a1")
     ax = gca()
     ax.set_title(L"a_0",pad = 20)   
     ax.spines["top"].set_visible(false)
@@ -38,7 +38,7 @@ function output_plot(data, file_name)
     xx = LinRange(0, L, N_x)
     
     fig = figure()
-    plot(xx, data, "--o", fillstyle="none", color="C1")
+    plot(xx, data, "--o", fillstyle="none",markersize=6, color="#a1a1a1")
     ax = gca()
     ax.set_title(L"a(T)",pad = 20)   
     ax.spines["top"].set_visible(false)
@@ -140,9 +140,9 @@ for i = 1:4
     L = 1
     xx = LinRange(0, L, N_x)
 
-    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none", color="#a1a1a1")
-    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none", color="#a1a1a1")
-    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none", color=colors[i])
+    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none",markersize=6, color=colors[i])
 
     ax[1,i].set_title(nns[i],pad = 20)
     ax[3,i].set_xlabel(L"x",labelpad=10)
@@ -162,7 +162,7 @@ ax[3,1].set_ylabel("Predicted "*L"a(T)")
 plt.tight_layout()
 plt.savefig("Advection-dc-low-medians.pdf")
 
-ind = 3 # median error
+ind = 3 # largest error
 fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(24,12))
 for i = 1:4
     nn_name = nn_names[i]
@@ -175,9 +175,9 @@ for i = 1:4
     L = 1
     xx = LinRange(0, L, N_x)
 
-    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none", color="#a1a1a1")
-    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none", color="#a1a1a1")
-    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none", color=colors[i],clip_on=false)
+    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none",markersize=6, color=colors[i],clip_on=false)
 
     ax[1,i].set_title(nns[i],pad = 20)
     ax[3,i].set_xlabel(L"x",labelpad=10)
@@ -196,5 +196,5 @@ ax[1,1].set_ylabel(L"a_0")
 ax[2,1].set_ylabel("True "*L"a(T)")
 ax[3,1].set_ylabel("Predicted "*L"a(T)")
 # plt.tight_layout()
-plt.subplots_adjust(left = 0.05, right = 0.95, bottom = 0.1,top=.9,hspace=0.1,wspace=0.1)
+plt.subplots_adjust(left = 0.05, right = 0.98, bottom = 0.1,top=.9,hspace=0.1,wspace=0.1)
 plt.savefig("Advection-dc-low-worst.pdf")

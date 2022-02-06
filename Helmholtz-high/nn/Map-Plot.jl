@@ -131,7 +131,7 @@ for i = 1:4
 end
 @show clims
 
-fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(17.5,12))
+fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(6.5,4))
 for i = 1:4
     nn_name = nn_names[i]
     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
@@ -150,7 +150,7 @@ for i = 1:4
     im2 = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
     im3 = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
 
-    ax[1,i].set_title(nns[i],pad = 20)
+    ax[1,i].set_title(nns[i],pad = 5)
     # ax[3,i].set_xlabel(L"x",labelpad=10)
 
     for j = 1:3
@@ -164,21 +164,21 @@ for i = 1:4
     end
     
     if i == 4
-        cax = fig.add_axes([0.92, 0.627, 0.015, 0.27],frameon=false)
+        cax = fig.add_axes([0.92, 0.628, 0.015, 0.27],frameon=false)
         cb = plt.colorbar(im1,cax=cax, ticks=[19.8, 20, 20.2],drawedges=false)
         cb.outline.set_visible(false)
-        cb.ax.yaxis.set_tick_params(colors="#808080")
+        cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
         cax2 = fig.add_axes([0.92,0.025, 0.015, 0.575])
         cb2 = plt.colorbar(im2,cax=cax2,ticks=[-0.04,0,0.04])
         cb2.outline.set_visible(false)
-        cb2.ax.yaxis.set_tick_params(colors="#808080")
+        cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
     end
 end
 
-ax[1,1].set_ylabel(L"\nabla\times f",labelpad=15)
-ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=15)
-ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=15)
+ax[1,1].set_ylabel(L"\nabla\times f",labelpad=5)
+ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5)
+ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5)
 plt.subplots_adjust(left = 0.05, right = 0.9, bottom = 0.025,top=.9,hspace=0.1,wspace=0.1)
 plt.savefig("Helmholtz-medians.pdf",dpi=72)
 plt.savefig("Helmholtz-medians.png",dpi=60)
@@ -205,7 +205,7 @@ for i = 1:4
 end
 @show clims
 
-fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(17.5,12))
+fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(6.5,4))
 for i = 1:4
     nn_name = nn_names[i]
     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
@@ -224,7 +224,7 @@ for i = 1:4
     im2 = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
     im3 = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
 
-    ax[1,i].set_title(nns[i],pad = 20)
+    ax[1,i].set_title(nns[i],pad = 5)
     # ax[3,i].set_xlabel(L"x",labelpad=10)
 
     for j = 1:3
@@ -238,21 +238,21 @@ for i = 1:4
     end
     
     if i == 4
-        cax = fig.add_axes([0.92, 0.627, 0.015, 0.27],frameon=false)
+        cax = fig.add_axes([0.92, 0.628, 0.015, 0.27],frameon=false)
         cb = plt.colorbar(im1,cax=cax, ticks=[19.6,19.8, 20, 20.2],drawedges=false)
         cb.outline.set_visible(false)
-        cb.ax.yaxis.set_tick_params(colors="#808080")
+        cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
         cax2 = fig.add_axes([0.92,0.025, 0.015, 0.575])
         cb2 = plt.colorbar(im2,cax=cax2,ticks=[-0.08,-0.04,0,0.04,0.08])
         cb2.outline.set_visible(false)
-        cb2.ax.yaxis.set_tick_params(colors="#808080")
+        cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
     end
 end
 
-ax[1,1].set_ylabel(L"\nabla\times f",labelpad=15)
-ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=15)
-ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=15)
+ax[1,1].set_ylabel(L"\nabla\times f",labelpad=5)
+ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5)
+ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5)
 plt.subplots_adjust(left = 0.05, right = 0.9, bottom = 0.025,top=.9,hspace=0.1,wspace=0.1)
 plt.savefig("Helmholtz-worst.pdf",dpi=72)
 plt.savefig("Helmholtz-worst.png",dpi=60)

@@ -409,7 +409,7 @@ FNO_Data =
 
 # width
 
-fig, ax = PyPlot.subplots(ncols = 4, sharex=false, sharey=true, figsize=(24,6))
+fig, ax = PyPlot.subplots(ncols = 4, sharex=false, sharey=true, figsize=(6.5,1.625))
 for i = 1:4
     ax[1].plot(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(PCA_Data[(i+3)*5+1, 1])))
     ax[2].plot(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[i], fillstyle="none", label =  "N = "*string(Int(DeepONet_Data[(i+3)*5+1, 1])))
@@ -424,22 +424,24 @@ for i = 1:4
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["left"].set_linewidth(0.3)
     ax[i].spines["bottom"].set_color("#808080")
-    ax[i][:xaxis][:set_tick_params](colors="#808080")
-    ax[i][:yaxis][:set_tick_params](colors="#808080")
+    ax[i].spines["bottom"].set_linewidth(0.3)
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
 end
 ax[1].legend(frameon=false,handlelength=3.4)
 ax[1].set_ylabel("Test error")
 
 i=1
 ax[1].set_xticks(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[1].set_xlabel("Network width "*L"w",labelpad=20)
+ax[1].set_xlabel("Network width "*L"w",labelpad=5)
 ax[2].set_xticks(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[2].set_xlabel("Network width "*L"w",labelpad=20)
+ax[2].set_xlabel("Network width "*L"w",labelpad=5)
 ax[3].set_xticks(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[3].set_xlabel("Network width "*L"w",labelpad=20)
+ax[3].set_xlabel("Network width "*L"w",labelpad=5)
 ax[4].set_xticks(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=20)
+ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=2)
 
 plt.tight_layout()
 plt.savefig("Helmholtz-Width-Error.pdf")
@@ -448,7 +450,7 @@ plt.savefig("Helmholtz-Width-Error.pdf")
 
 
 ## Data vs Error
-fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(24,6))
+fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(6.5,1.625))
 
 row_ids = [1,2,3,4]
 # small
@@ -460,32 +462,34 @@ for i = 1:3
     ax[i].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none")
     ax[i].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none")
     
-    ax[i].loglog(N_Data, 5*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",  linewidth=1)
-    ax[i].text(10000,1,"1/√N",color="#bababa",fontsize=22)
+    ax[i].loglog(N_Data, 5*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",  linewidth=0.5)
+    ax[i].text(10000,1,"1/√N",color="#bababa",fontsize=6)
 end
 i = 4
-ax[4].loglog(N_Data, 5*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=1)
-ax[4].text(10000,1,"1/√N",color="#bababa",fontsize=22)
+ax[4].loglog(N_Data, 5*sqrt(N_Data[1]) ./ sqrt.(N_Data), color = "#bababa",linewidth=0.5)
+ax[4].text(10000,1,"1/√N",color="#bababa",fontsize=6)
 ax[4].loglog(N_Data, PCA_Data[row_ids[i]:5:40, 5],      color = colors[1], linestyle=(0,(1,1)), marker = markers[1], fillstyle="none",      label =  nns[1]  )
 ax[4].loglog(N_Data, DeepONet_Data[row_ids[i]:5:40, 5], color = colors[2], linestyle=(0,(1,1)), marker = markers[2], fillstyle="none",      label =  nns[2]  )
 ax[4].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], linestyle=(0,(1,1)), marker = markers[3], fillstyle="none",      label =  nns[3]  )
 ax[4].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none",      label =  nns[4]  )
 
 for i = 1:4
-    ax[i].set_title(sizes[i],pad=50)
+    ax[i].set_title(sizes[i],pad=10)
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["left"].set_linewidth(0.3)
     ax[i].spines["bottom"].set_color("#808080")
+    ax[i].spines["bottom"].set_linewidth(0.3)
     ax[i].set_xticks(N_Data[2:2:end])
     ax[i].set_xticklabels(N_Data[2:2:end])
     # ax[i].set_yticks(plot2_yticks)
 
-    ax[i][:xaxis][:set_tick_params](colors="#808080")
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
-    ax[i][:yaxis][:set_tick_params](colors="#808080")
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i][:yaxis][:set_tick_params](which="minor",left=false) # remove minor ytick labels?
-    ax[i].set_xlabel(latexstring("Training data ",L"N"),labelpad=20)
+    ax[i].set_xlabel(latexstring("Training data ",L"N"),labelpad=2)
 end
 # ax[1].set_yticklabels(plot2_yticks)
 ax[1].set_ylabel("Test error")
@@ -520,7 +524,7 @@ for i = 1:size(FNO_Data)[1]
     FNO_Data[i, 3] = FNO_Net_Cost(FNO_Data[i, 2], kmax, layers, Np)
 end
 
-fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(24,6))
+fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(6.5,1.625))
 
 
 for i = 1:4
@@ -539,12 +543,15 @@ for i = 1:4
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
+    ax[i].spines["left"].set_linewidth(0.3)
     ax[i].spines["bottom"].set_color("#808080")
-    ax[i][:xaxis][:set_tick_params](colors="#808080")
-    ax[i][:yaxis][:set_tick_params](colors="#808080")
+    ax[i].spines["bottom"].set_linewidth(0.3)
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
     # ax[i].set_xticks([1e5, 1e7,1e9])
     # ax[i].set_xticklabels([L"10^5",L"10^7",L"10^9"])
-    ax[i].set_xlabel("Evaluation complexity",labelpad=20)
+    ax[i].set_xlabel("Evaluation complexity",labelpad=2)
 end
 ax[1].legend(frameon=false,handlelength=0)
 ax[1].set_ylabel("Test error")

@@ -18,7 +18,7 @@ include("PlatePull.jl")
 
 
 
-function map_plot(prefix = "/central/scratch/dzhuang/Helmholtz_data/", inds = [1000,1201])
+function map_plot(prefix = "../../data/", inds = [1000,1201])
     inputs   = npzread(prefix * "Random_UnitCell_Fn_100.npy")   
     outputs  = npzread(prefix * "Random_UnitCell_sigma_100.npy")
     XY = npzread(prefix * "Random_UnitCell_XY_100.npy")

@@ -56,7 +56,7 @@ ntest = M-M//2
 s = N
 
 N_theta = 100
-prefix = "/central/scratch/dzhuang/Helmholtz_data/"
+prefix = "../../../data/"
 cs = np.load(prefix+"Random_NS_curl_f_" + str(N_theta) + ".npy") 
 K = np.load(prefix+"Random_NS_omega_" + str(N_theta) + ".npy")
 

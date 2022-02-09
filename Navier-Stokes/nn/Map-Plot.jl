@@ -40,7 +40,7 @@ function output_plot(data, file_name)
     fig.savefig(file_name)
 end
 
-function map_plot(prefix = "../src/", inds = [1,11])
+function map_plot(prefix = "../../data/", inds = [1,11])
     inputs   = npzread(prefix * "Random_NS_curl_f_100.npy")   
     outputs  = npzread(prefix * "Random_NS_omega_100.npy")
     
@@ -88,8 +88,7 @@ end
 
 
 
-
-# map_plot("/central/scratch/dzhuang/Helmholtz_data/")
+# map_plot("../../data/")
 # prediction_plot("PCA", 10000, 128, 1)
 # prediction_plot("PCA", 10000, 128, 2)
 # prediction_plot("PCA", 10000, 128, 3)
@@ -203,6 +202,7 @@ for i = 1:4
     clims[3,2] = maximum([clims[3,2],maximum(outputs[:,:,ind+3])])
 end
 @show clims
+
 
 fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(6.5,4))
 for i = 1:4

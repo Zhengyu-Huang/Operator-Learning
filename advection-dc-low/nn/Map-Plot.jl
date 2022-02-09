@@ -53,7 +53,7 @@ function output_plot(data, file_name)
     fig.savefig(file_name)
 end
 
-function map_plot(prefix = "../src/", inds = [1,11])
+function map_plot(prefix = "../../data/", inds = [1,11])
     inputs   = npzread(prefix * "adv_a0.npy")   
     outputs  = npzread(prefix * "adv_aT.npy")
     
@@ -107,6 +107,7 @@ map_plot("../src/")
 # prediction_plot("PCA", 10000, 128, 1)
 # prediction_plot("PCA", 10000, 128, 2)
 # prediction_plot("PCA", 10000, 128, 3)
+
 
 # prediction_plot("FNO", 10000, 16, 1)
 # prediction_plot("FNO", 10000, 16, 2)

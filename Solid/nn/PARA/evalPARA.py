@@ -41,7 +41,7 @@ N = 21
 
 ntrain = M//2
 N_theta = 100
-prefix = "/central/scratch/dzhuang/Helmholtz_data/"
+prefix = "../../../data/"
 
 theta = np.load(prefix+"Random_UnitCell_theta_" + str(N_theta) + ".npy")   
 K = np.load(prefix+"Random_UnitCell_sigma_" + str(N_theta) + ".npy")

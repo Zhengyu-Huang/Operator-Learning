@@ -21,9 +21,9 @@ N = 100
 ntrain = M//2
 N_theta = 100
 prefix = "/central/scratch/dzhuang/Helmholtz_data/"
-theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+theta = np.load(prefix+"Random_Helmholtz_high_theta_" + str(N_theta) + ".npy")   
+K = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
 
 
 acc = 0.999
@@ -45,7 +45,7 @@ if compute_input_PCA:
     
     # r_f = min(r_f, 512)
 
-    r_f = 512
+    r_f = 101
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     x_train_part = f_hat.T.astype(np.float32)
@@ -67,8 +67,8 @@ i = 20
 j = 40
 assert(X[i, j] == i*dx and Y[i, j] == j*dx)
 
-X_upper = full2upper(X)
-Y_upper = full2upper(Y)
+X_upper = np.reshape(X, -1)
+Y_upper = np.reshape(Y, -1)
 N_upper = len(X_upper)
 x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
 y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
@@ -78,7 +78,7 @@ for i in range(M//2):
     x_train[d_range , 0:r_f]   = x_train_part[i, :]
     x_train[d_range , r_f]     = X_upper
     x_train[d_range , r_f + 1] = Y_upper 
-    y_train[d_range] = full2upper(K[:, :, i])
+    y_train[d_range] = np.reshape(K[:, :, i], -1)
     
 
 

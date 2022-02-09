@@ -16,8 +16,8 @@ function PCA_Net_Cost(n_in, width, layers, Np)
     return c
 end
 
-function PARA_Net_Cost(n_in, width, layers, Np)
-    ns = push!(pushfirst!([width for i = 1:layers-1], n_in+2), 1)
+function PARA_Net_Cost(n_in, n_y, width, layers, Np)
+    ns = push!(pushfirst!([width for i = 1:layers-1], n_in+n_y), 1)
     c = n_in*(2*Np-1) + FNN_Cost(ns) * Np
     return c
 end
@@ -28,5 +28,5 @@ end
 
 function FNO_Net_Cost(df, k, layers, Np)
     #                 fourier fft/ifft        multiply    pointwise 
-    return Np*df + (2df * 5 * Np * log2(Np) + 2*df*k*k  + Np + Np + Np)*layers +  Np*(2df-1)
+    return Np*df + layers*(  df*(2*5*Np*log(Np) + 2*k*k - k + Np) + Np*(2*df*df - df)  )  +     Np*(2df-1)
 end

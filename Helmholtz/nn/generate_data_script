@@ -1,16 +1,13 @@
 #!/bin/bash
 
-#Submit this script with: sbatch calibrate_script
+##Submit this script with: sbatch calibrate_script
 
-#SBATCH --time=168:00:00   # walltime
+#SBATCH --time=24:00:00   # walltime
 #SBATCH --ntasks=20       # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1         # number of nodes
-##SBATCH --mail-type=BEGIN
-##SBATCH --mail-type=END
-##SBATCH --mail-type=FAIL
 #SBATCH -J "Helmholtz"    # job name
 #SBATCH --mem-per-cpu=64G 
-##SBATCH --reservation=clima
+
 
 
 module purge

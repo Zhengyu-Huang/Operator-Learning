@@ -41,7 +41,7 @@ function output_plot(data, file_name)
     fig.savefig(file_name)
 end
 
-function map_plot(prefix = "../src/", inds = [1,11])
+function map_plot(prefix = "../../data/", inds = [1,11])
     inputs   = npzread(prefix * "Random_Helmholtz_high_cs_100.npy")   
     outputs  = npzread(prefix * "Random_Helmholtz_high_K_100.npy")
     
@@ -87,7 +87,7 @@ function prediction_plot(nn_name, ntrain, width, ind)
     
 end
 
-# map_plot("/central/scratch/dzhuang/Helmholtz_data/")
+# map_plot("../../data/")
 # prediction_plot("PCA", 10000, 128, 1)
 # prediction_plot("PCA", 10000, 128, 2)
 # prediction_plot("PCA", 10000, 128, 3)
@@ -95,7 +95,6 @@ end
 # prediction_plot("FNO", 10000, 16, 1)
 # prediction_plot("FNO", 10000, 16, 2)
 # prediction_plot("FNO", 10000, 16, 3)
-
 
 # prediction_plot("DeepONet", 10000, 128, 1)
 # prediction_plot("DeepONet", 10000, 128, 2)

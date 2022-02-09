@@ -247,8 +247,6 @@ end
 
 
 
-
-
 #=
 Compute sorted pair (i, j), sorted by i^2 + j^2
 wInt64h i≥0 and j≥0 and i+j>0
@@ -305,7 +303,7 @@ They can be sorted, where the eigenvalues λ_{l} are in descending order
 
 generate_θ_KL function generates the summation of the first N_KL terms 
 =#
-function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}, d::Float64=2.0, τ::Float64=3.0) 
+function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pairs::Array{Int64, 2}; d::Float64=2.0, τ::Float64=3.0, cmin::Float64=200.0, cmax::Float64=400.0, mean=nothing, std=nothing) 
     
     N_KL = length(θ)
     
@@ -327,7 +325,11 @@ function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pair
         
     end
     
-    c = 250 .+ 50*(a > 0.0)
+    if mean === nothing && std === nothing
+        c = cmin .+ (cmax - cmin)*(a > 0.0)
+    else
+        c = mean .+ std^2 * tanh.(a) 
+    end
     
     return c
 end
@@ -456,6 +458,48 @@ function Generate_κ(θ, seq_pairs, ne, porder, K_scale)
     end
 
     return κ, c_field
+end
+
+
+
+function Generate_sol(θ, seq_pairs, ne, porder, mean, std)
+    c_func = (x,y)->c_func_random(x, y, θ, seq_pairs; mean=mean, std=std);
+
+    bc_types = ["Neumann", "Neumann", "Neumann", "Neumann"]
+    x0, d0 = 0.5, 0.3
+    # define fourier boundary
+    # f(x) = 1_{ |x - x0| < d0/2.0 } 
+    bc_funcs = [(x,y)->0, (x,y)->0, (x,y)->bump_func(x, y, x0,d0), (x,y)->0]
+
+    ω = 1000.0
+    s_func = (x,y)-> 0
+    Lx, Ly = 1.0, 1.0
+    nodes, elnodes, bc_nodes = box(Lx, Ly, ne, ne, porder)
+    ngp = 3
+    
+    
+    domain = Domain(nodes, elnodes,
+    bc_nodes, bc_types, bc_funcs,
+    porder, ngp; 
+    ω = ω, 
+    c_func = c_func, 
+    s_func = s_func)
+
+    domain = solve!(domain)
+    
+    ####
+    sol = reshape(domain.state, ne+1, ne+1)
+
+    c_field = zeros(ne+1, ne+1)
+    Lx, Ly = 1.0, 1.0   # box edge lengths
+    xx , yy = LinRange(0, Lx, ne+1), LinRange(0, Ly, ne+1)
+    for i = 1:ne+1
+        for j = 1:ne+1
+            c_field[i, j] = c_func(xx[i], yy[j])
+        end
+    end
+
+    return sol, c_field
 end
 
 # function Generate_cs(θ, seq_pairs, ne)

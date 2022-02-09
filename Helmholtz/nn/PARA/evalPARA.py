@@ -41,9 +41,9 @@ N = 100
 ntrain = M//2
 N_theta = 100
 prefix = "/central/scratch/dzhuang/Helmholtz_data/"
-theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+theta = np.load(prefix+"Random_Helmholtz_high_theta_" + str(N_theta) + ".npy")   
+K = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
 
 K_train = K[:, :, :M//2]
 K_test = K[:, :, M//2:M]
@@ -66,7 +66,7 @@ if compute_input_PCA:
 
     # r_f = min(r_f, 512)
 
-    r_f = 512
+    r_f = 101
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     f_hat_test = np.matmul(Uf.T,test_inputs)
@@ -81,9 +81,6 @@ else:
     x_train_part = train_inputs.astype(np.float32)
     x_test_part = test_inputs.astype(np.float32)
 
-    
-del inputs
-del Ui, Vi, Uf, f_hat
 
 Y, X = np.meshgrid(xgrid, xgrid)
 # test
@@ -91,8 +88,8 @@ i = 20
 j = 40
 assert(X[i, j] == i*dx and Y[i, j] == j*dx)
 
-X_upper = full2upper(X)
-Y_upper = full2upper(Y)
+X_upper = np.reshape(X, -1)
+Y_upper = np.reshape(Y, -1)
 N_upper = len(X_upper)
 x_train = np.zeros((M//2 * N_upper, r_f + 2), dtype = np.float32)
 y_train = np.zeros(M//2 * N_upper, dtype = np.float32)
@@ -102,7 +99,7 @@ for i in range(M//2):
     x_train[d_range , 0:r_f]   = x_train_part[i, :]
     x_train[d_range , r_f]     = X_upper
     x_train[d_range , r_f + 1] = Y_upper 
-    y_train[d_range] = full2upper(K[:, :, i])
+    y_train[d_range] = np.reshape(K[:, :, i], -1)
 
 x_train = torch.from_numpy(x_train)
 y_train = torch.from_numpy(y_train).unsqueeze(-1)
@@ -127,14 +124,14 @@ rel_err_nn_train = np.zeros(M//2)
 for i in range(M//2):
     print("i / N = ", i, " / ", M//2)
     K_train_pred_upper = y_normalizer.decode(model( x_train[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
-    K_train_pred = upper2full_1(K_train_pred_upper)
+    K_train_pred = np.reshape(K_train_pred_upper, (N+1,N+1))
     rel_err_nn_train[i] =  np.linalg.norm(K_train_pred - K_train[:, :, i])/np.linalg.norm(K_train[:, :, i])
 mre_nn_train = np.mean(rel_err_nn_train)
 
 ####### worst error plot
 i = np.argmax(rel_err_nn_train)
 K_train_pred_upper = y_normalizer.decode(model(x_train[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
-K_train_pred = upper2full_1(K_train_pred_upper)
+K_train_pred = np.reshape(K_train_pred_upper, (N+1,N+1))
 fig,ax = plt.subplots(ncols=3, figsize=(9,3))
 vmin, vmax = K_train[:,:,i].min(), K_train[:,:,i].max()
 ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N+1,N+1)),  shading='gouraud')
@@ -164,14 +161,14 @@ rel_err_nn_test = np.zeros(M//2)
 for i in range(M-M//2):
     print("i / N = ", i, " / ", M-M//2)
     K_test_pred_upper = y_normalizer.decode(model(x_test[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
-    K_test_pred = upper2full_1(K_test_pred_upper)
+    K_test_pred = np.reshape(K_test_pred_upper, (N+1,N+1))
     rel_err_nn_test[i] =  np.linalg.norm(K_test_pred - K_test[:, :, i])/np.linalg.norm(K_test[:, :, i])
 mre_nn_test = np.mean(rel_err_nn_test)
 
 ####### worst error plot
 i = np.argmax(rel_err_nn_test)
 K_test_pred_upper = y_normalizer.decode(model(x_test[i*N_upper:(i+1)*N_upper, :].to(device) )).detach().cpu().numpy()
-K_test_pred = upper2full_1(K_test_pred_upper)
+K_test_pred = np.reshape(K_test_pred_upper, (N+1,N+1))
 fig,ax = plt.subplots(ncols=3, figsize=(9,3))
 vmin, vmax = K_test[:,:,i].min(), K_test[:,:,i].max()
 ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:, i], (N+1,N+1)),  shading='gouraud')
@@ -212,7 +209,7 @@ for i, ind in enumerate([np.argmin(rel_err_nn_test), np.argsort(rel_err_nn_test)
     # predict
     
     K_test_pred_upper = y_normalizer.decode(model(x_test[ind*N_upper:(ind+1)*N_upper, :].to(device) )).detach().cpu().numpy()
-    K_test_pred = upper2full_1(K_test_pred_upper)
+    K_test_pred = np.reshape(K_test_pred_upper, (N+1,N+1))
     test_output_save[:, :, i + 3] =  K_test_pred
 
 np.save(str(ntrain) + "_" + str(N_neurons) + "_test_input_save.npy", test_input_save)

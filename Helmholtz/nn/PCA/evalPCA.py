@@ -56,9 +56,9 @@ N = 100
 ntrain = M//2
 N_theta = 100
 prefix = "/central/scratch/dzhuang/Helmholtz_data/"
-theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+theta = np.load(prefix+"Random_Helmholtz_high_theta_" + str(N_theta) + ".npy")   
+K = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
 
 acc=0.999
 
@@ -79,7 +79,7 @@ if compute_input_PCA:
     r_f = np.argwhere(en_f<(1-acc))[0,0]
     
     # r_f = min(r_f, 512)
-    r_f = 512
+    r_f = 101
     
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
@@ -161,3 +161,79 @@ np.save(str(ntrain) + "_" + str(N_neurons) + "_test_output_save.npy", test_outpu
 
 
 
+
+
+
+# fig,ax = plt.subplots(figsize=(3,3))
+# fig.subplots_adjust(bottom=0.2,left = 0.15)
+# ax.semilogy(rel_err_nn_train,lw=0.5,color=color1,label='training')
+# ax.semilogy(rel_err_nn_test,lw=0.5,color=color2,label='test')
+# ax.legend()
+# plt.xlabel('data index')
+# plt.ylabel('Relative errors')
+# plt.tight_layout()
+# plt.savefig('NN%d_errors.png' %(N_neurons),pad_inches=3)
+# plt.close()
+
+# ind = np.argmax(rel_err_nn_test)
+# Y, X = np.meshgrid(xgrid, xgrid)
+
+# fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+# vmin, vmax = min(test_outputs[:,ind]), max(test_outputs[:,ind])
+# ax[0].pcolormesh(X, Y, np.reshape(test_inputs[:,ind],(N+1,N+1)),               shading='gouraud')
+# ax[1].pcolormesh(X, Y, np.reshape(test_outputs[:,ind],(N+1,N+1)),              shading='gouraud', vmin=vmin, vmax =vmax)
+# ax[2].pcolormesh(X, Y, np.reshape(np.matmul(Ug,y_pred_test[:,ind]),(N+1,N+1)), shading='gouraud', vmin=vmin, vmax =vmax)
+# plt.xlabel('x')
+# plt.ylabel('y')
+# plt.tight_layout()
+# plt.savefig('worst_case_test_NN%d.png' %(N_neurons),pad_inches=3)
+# plt.close()
+
+# # for ind in np.random.randint(0,1024,(5,)):
+# # 	fig,ax = plt.subplots(figsize=(3,3))
+# # 	fig.subplots_adjust(bottom=0.2,left = 0.15)
+# # 	ax.plot(xgrid,test_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
+# # 	ax.plot(xgrid,test_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
+# # 	ax.plot(xgrid,np.matmul(Ug,y_pred_test[:,ind]),lw=0.5,color=color3,label="NN u(T)")
+# # 	ax.legend()
+# # 	plt.xlabel('$x$')
+# # 	plt.ylabel('u(x)')
+# # 	plt.savefig('test'+str(ind)+'.png',pad_inches=3)
+# # 	plt.close()
+
+# ind = np.argmax(rel_err_nn_train)
+
+# fig,ax = plt.subplots(ncols=3, figsize=(9,3))
+# vmin, vmax = min(test_outputs[:,ind]), max(test_outputs[:,ind])
+# ax[0].pcolormesh(X, Y, np.reshape(train_inputs[:,ind],(N+1,N+1)),               shading="gouraud")
+# ax[1].pcolormesh(X, Y, np.reshape(train_outputs[:,ind],(N+1,N+1)),              shading="gouraud", vmin=vmin, vmax =vmax)
+# ax[2].pcolormesh(X, Y, np.reshape(np.matmul(Ug,y_pred_train[:,ind]),(N+1,N+1)), shading="gouraud", vmin=vmin, vmax =vmax)
+# plt.xlabel('x')
+# plt.ylabel('y')
+# plt.tight_layout()
+# plt.savefig('worst_case_train_NN%d.png' %(N_neurons),pad_inches=3)
+# plt.close()
+
+
+# # for ind in np.random.randint(0,1024,(9,)):
+# # 	fig,ax = plt.subplots(figsize=(3,3))
+# # 	fig.subplots_adjust(bottom=0.2,left = 0.15)
+# # 	ax.plot(xgrid,train_inputs[:,ind],'--',lw=0.5,color=color1,label='$u_0$')
+# # 	ax.plot(xgrid,train_outputs[:,ind],lw=0.5,color=color2,label='$u(T)$')
+# # 	ax.plot(xgrid,np.matmul(Ug,y_pred_train[:,ind]),lw=0.5,color=color3,label="NN u(T)")
+# # 	ax.legend()
+# # 	plt.xlabel('$x$')
+# # 	plt.ylabel('u(x)')
+# # 	plt.savefig('train'+str(ind)+'.png',pad_inches=3)
+# # 	plt.close()
+
+
+# # fig,ax = plt.subplots(figsize=(3,3))
+# # fig.subplots_adjust(bottom=0.2,left = 0.15)
+# # ax.semilogy(en_f,lw=0.5,color=color1,label='input')
+# # ax.semilogy(en_g,lw=0.5,color=color2,label='output')
+# # ax.legend()
+# # plt.xlabel('index')
+# # plt.ylabel('energy lost')
+# # plt.savefig('training_PCA.png',pad_inches=3)
+# # plt.close()

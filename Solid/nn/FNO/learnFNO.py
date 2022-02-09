@@ -49,7 +49,7 @@ ntest = M-M//2
 
 s = N = 41
 N_theta = 100
-prefix = "/central/scratch/dzhuang/Helmholtz_data/"
+prefix = "../../../data/"
 K = np.load(prefix+"Random_UnitCell_sigma_" + str(N_theta) + "_interp.npy")
 cs = np.load(prefix+"Random_UnitCell_Fn_" + str(N_theta) + "_interp.npy")
 XY = np.load(prefix+"Random_UnitCell_XY_" + str(N_theta) + ".npy")

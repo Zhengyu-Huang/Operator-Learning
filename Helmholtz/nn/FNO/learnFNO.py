@@ -52,8 +52,8 @@ s = N+1
 
 N_theta = 100
 prefix = "/central/scratch/dzhuang/Helmholtz_data/"  
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+K = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
 
 # transpose
 cs = cs.transpose(2, 0, 1)

@@ -18,9 +18,9 @@ N = 100
 ntrain = M//2
 N_theta = 100
 prefix = "/central/scratch/dzhuang/Helmholtz_data/"
-theta = np.load(prefix+"Random_Helmholtz_theta_" + str(N_theta) + ".npy")   
-K = np.load(prefix+"Random_Helmholtz_K_" + str(N_theta) + ".npy")
-cs = np.load(prefix+"Random_Helmholtz_cs_" + str(N_theta) + ".npy")
+theta = np.load(prefix+"Random_Helmholtz_high_theta_" + str(N_theta) + ".npy")   
+K = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
+cs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
 
 
 acc = 0.999
@@ -42,7 +42,7 @@ if compute_input_PCA:
     r_f = np.argwhere(en_f<(1-acc))[0,0]
     # r_f = min(r_f, 512)
 
-    r_f = 512
+    r_f = 101
     Uf = Ui[:,:r_f]
     f_hat = np.matmul(Uf.T,train_inputs)
     x_train = torch.from_numpy(f_hat.T.astype(np.float32))

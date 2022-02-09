@@ -16,9 +16,6 @@ function Data_Generate()
 
 
     porder = 1
-    Δx = 1.0/ne
-    K_scale = zeros(Float64, ne*porder+1) .+ Δx
-    K_scale[1] = K_scale[end] = Δx/2.0
     
     θ_field = rand(Normal(0, 1.0), N_data, N_θ);
     κ_field = zeros(ne+1, ne+1, N_data)
@@ -28,10 +25,12 @@ function Data_Generate()
 
 
     params = [θ_field[i, :] for i in 1:N_data]
-
+    cmin, cmax = 100.0 , 200.0
+    
+    mean, std = 20.0 , 1.0
     # Define caller function
     @everywhere κ_(x::Vector{FT}) where FT<:Real = 
-        Generate_κ(x, $seq_pairs, $ne, $porder, $K_scale)
+        Generate_sol(x, $seq_pairs, $ne, $porder, $mean, $std)
 
     @everywhere params = $params  
 
@@ -51,9 +50,9 @@ function Data_Generate()
 
 
 
-    npzwrite("Random_Helmholtz_theta_$(N_θ).npy", θ_field)
-    npzwrite("Random_Helmholtz_K_$(N_θ).npy", κ_field)
-    npzwrite("Random_Helmholtz_cs_$(N_θ).npy", c_field)
+    npzwrite("Random_Helmholtz_high_theta_$(N_θ).npy", θ_field)
+    npzwrite("Random_Helmholtz_high_K_$(N_θ).npy", κ_field)
+    npzwrite("Random_Helmholtz_high_cs_$(N_θ).npy", c_field)
     
 end
 

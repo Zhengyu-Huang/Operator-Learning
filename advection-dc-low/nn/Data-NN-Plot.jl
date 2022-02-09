@@ -319,7 +319,7 @@ for i = 1:size(DeepONet_Data)[1]
     DeepONet_Data[i, 3] = DeepO_Net_Cost(n_in, DeepONet_Data[i, 2],layers, Np)
 end
 for i = 1:size(PARA_Data)[1]
-    PARA_Data[i, 3] = PARA_Net_Cost(n_in, PARA_Data[i, 2],layers, Np)
+    PARA_Data[i, 3] = PARA_Net_Cost(n_in, 1, PARA_Data[i, 2],layers, Np)
 end
 for i = 1:size(FNO_Data)[1]
     FNO_Data[i, 3] = FNO_Net_Cost(FNO_Data[i, 2], kmax, layers, Np)

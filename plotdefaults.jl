@@ -1,8 +1,8 @@
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
     mysize = 6
     font0 = Dict(
-    "font.size" => 8,          # title
-    "axes.labelsize" => 7, # axes labels
+    "font.size" => 10,          # title
+    "axes.labelsize" => 8, # axes labels
     "xtick.labelsize" => mysize,
     "ytick.labelsize" => mysize,
     "legend.fontsize" => mysize,

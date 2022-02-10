@@ -103,7 +103,6 @@ cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 fig.subplots_adjust(left = 0.08, right = 0.98, bottom = 0.025,top=0.98,wspace=0.3)
 fig.savefig("Solid-map.pdf")
 
-stop
 ####################################################
 # Plot median/worst case error examples
 ####################################################

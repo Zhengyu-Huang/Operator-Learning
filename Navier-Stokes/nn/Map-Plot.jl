@@ -57,56 +57,52 @@ function map_plot(prefix = "../../data/", inds = [1,11])
 end
 
 
+####################################################
+# Plot example input and output
+####################################################
+prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+inputs   = npzread(prefix * "Random_NS_curl_f_100.npy")   
+outputs  = npzread(prefix * "Random_NS_omega_100.npy")
+sample_ind = 1
+L = 1
+N_x, _ = size(inputs[:,:,sample_ind])
+xx = LinRange(0, L, N_x)
+Y, X = meshgrid(xx, xx)
 
+fig,ax = PyPlot.subplots(1,2,sharex=true,sharey=true,figsize=(4.5,2))
+im1 = ax[1].pcolormesh(X, Y, inputs[:,:,sample_ind],  shading="gouraud")
+cb1 = plt.colorbar(im1,ax=ax[1],shrink=0.7,aspect=15)
+cb1.outline.set_visible(false)
+cb1.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+im2 = ax[2].pcolormesh(X, Y, outputs[:,:,sample_ind],  shading="gouraud")
+cb2 = plt.colorbar(im2,ax=ax[2],shrink=0.7,aspect=15)
+cb2.outline.set_visible(false)
+cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
-# i = 0, 1, 2 smallest, median, largest
-function prediction_plot(nn_name, ntrain, width, ind)
-    err = ["s", "m", "l"]
-    inputfile  = nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_input_save.npy"
-    outputfile = nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_output_save.npy"
-    inputs   = npzread(inputfile)   
-    outputs  = npzread(outputfile)
-    
-    N_x, _ = size(inputs)
-    L = 1
-    xx = LinRange(0, L, N_x)
-    
-    fig, ax = PyPlot.subplots(ncols = 3, sharex=true, sharey=true, figsize=(18,6))
-    
-    Y, X = meshgrid(xx, xx)
-    
-    vmin, vmax = minimum(outputs[:, :, ind]), maximum(outputs[:, :, ind])
-    ax[1].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud")
-    ax[2].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=vmin, vmax =vmax)
-    ax[3].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=vmin, vmax =vmax)
-
-    
-    fig.tight_layout()
-    fig.savefig("NS-" * err[ind] * "_" * nn_name * "_" * string(ntrain) * "_" * string(width)* ".pdf")
-    
+for i = 1:2
+    ax[i].set_aspect("equal","box")
+    ax[i].spines["left"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i].spines["bottom"].set_visible(false)
+    ax[i].spines["top"].set_visible(false)
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i].set_xlabel(L"x")
+    ax[i].set_yticks([0,0.5,1])
+    ax[i].set_yticklabels(["0",L"\pi",L"2\pi"])
+    ax[i].set_xticks([0,0.5,1])
+    ax[i].set_xticklabels(["0",L"\pi",L"2\pi"])
 end
+ax[1].set_ylabel(L"y")
+ax[1].set_title(L"\nabla\times f")
+ax[2].set_title(L"\omega(T)")
+fig.subplots_adjust(left=0.1,right=0.95,bottom=0.025,top=0.975,wspace=0.3)
+fig.savefig("NS-map.pdf")
 
 
-
-# map_plot("../../data/")
-# prediction_plot("PCA", 10000, 128, 1)
-# prediction_plot("PCA", 10000, 128, 2)
-# prediction_plot("PCA", 10000, 128, 3)
-
-# prediction_plot("FNO", 10000, 16, 1)
-# prediction_plot("FNO", 10000, 16, 2)
-# prediction_plot("FNO", 10000, 16, 3)
-
-
-# prediction_plot("DeepONet", 10000, 128, 1)
-# prediction_plot("DeepONet", 10000, 128, 2)
-# prediction_plot("DeepONet", 10000, 128, 3)
-
-
-# prediction_plot("PARA", 10000, 128, 1)
-# prediction_plot("PARA", 10000, 128, 2)
-# prediction_plot("PARA", 10000, 128, 3)
-
+####################################################
+# Plot median/worst case error examples
+####################################################
 nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
 ntrain = 10000
 widths = [128, 128, 128, 16]

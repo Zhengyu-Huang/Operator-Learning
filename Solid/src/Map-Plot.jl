@@ -12,7 +12,7 @@ function map_plot(prefix = "../../data/", inds = [1000,1201])
 
     inputs   = npzread(prefix * "Random_UnitCell_Fn_100.npy")   
     outputs  = npzread(prefix * "Random_UnitCell_sigma_100.npy")
-    XY = npzread(prefix * "Random_UnitCell_XY_100.npy")
+    # XY = npzread(prefix * "Random_UnitCell_XY_100.npy")
     
     
     N = 21
@@ -39,41 +39,6 @@ function map_plot(prefix = "../../data/", inds = [1000,1201])
     end 
 end
 
-# i = 0, 1, 2 smallest, median, largest
-function prediction_plot(nn_name, ntrain, width, ind)
-    err = ["s", "m", "l"]
-    inputfile  = "../nn/" * nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_input_save.npy"
-    outputfile = "../nn/" * nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_output_save.npy"
-    inputs   = npzread(inputfile)   
-    outputs  = npzread(outputfile)
-    
-    porder = 2
-    θ = rand(Normal(0, 1.0), 100);
-    filename = "square-circle-coarse-o2"
-    domain, Fn = ConstructDomain(porder, θ, filename)
-    ngp = Int64(sqrt(length(domain.elements[1].weights)))
-    
-    
-    N_x, _ = size(inputs)
-    L = 1
-    xx = LinRange(0, L, N_x)
-    
-    fig, ax = PyPlot.subplots(ncols = 3, sharex=true, sharey=false, figsize=(18,6))
-    ax[1].plot(xx, inputs[:, ind], "--o", fillstyle="none")
-    
-    vmin, vmax = minimum(outputs[:, ind]), maximum(outputs[:, ind])
-    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax[2], mycolorbar=false )
-    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax[3], mycolorbar=false )
-
-    
-    @info "error is: ", norm(outputs[:, ind+3] - outputs[:, ind])/norm(outputs[:, ind])
-    
-    fig.tight_layout()
-    fig.savefig("Solid-" * err[ind] * "_" * nn_name * "_" * string(ntrain) * "_" * string(width)* ".pdf")
-    plt.close()
-    
-end
-
 function quad_itp(x,y)
     n = trunc(Int,(length(y)-1)/2) # number of segments
     xx = LinRange(x[1],x[end],n*10+1)
@@ -87,10 +52,61 @@ function quad_itp(x,y)
     yy[end] = y[end]
     return xx,yy
 end
-# map_plot()
 
+####################################################
+# Plot example input and output
+####################################################
+prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+inputs   = npzread(prefix * "Random_UnitCell_Fn_100.npy")   
+outputs  = npzread(prefix * "Random_UnitCell_sigma_100.npy")
+XY = npzread(prefix * "Random_UnitCell_XY_100.npy")
 
+N = 21
+xgrid = LinRange(0,1,N)
+porder = 2
+θ = rand(Normal(0, 1.0), 100);
+filename = "square-circle-coarse-o2"
+domain, Fn = ConstructDomain(porder, θ, filename)
+ngp = Int64(sqrt(length(domain.elements[1].weights)))
+px,py = quad_itp(xgrid,inputs[:,1000])
 
+fig, ax = PyPlot.subplots(1,2,sharex = true,figsize=(4.5,2))
+ax[1].plot(xgrid, inputs[:,1000], "o",color="#808080",markersize=1, fillstyle="none")
+ax[1].plot(px,py,color="#808080")
+im = visσ(domain, ngp,0,350, σ=outputs[:, 1000], ax = ax[2], mycolorbar="viridis")
+
+for i = 1:2
+    ax[i].spines["top"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+end
+ax[1].spines["left"].set_color("#808080")
+ax[1].spines["left"].set_linewidth(0.3)
+ax[1].spines["bottom"].set_color("#808080")
+ax[1].spines["bottom"].set_linewidth(0.3)
+ax[1].set_aspect(1. /900)
+ax[1].set_title("Top loading "*L"\bar{t}")
+ax[1].set_ylim([-220,500])
+ax[1].set_xlabel(L"x")
+
+ax[2].spines["bottom"].set_visible(false)
+ax[2].spines["left"].set_visible(false)
+ax[2].set_title("Stress field")
+ax[2].set_xlabel(L"x")
+ax[2].set_ylabel(L"y")
+ax[2].set_aspect("equal","box")
+cb = plt.colorbar(im,shrink=0.7,aspect = 15,pad = 0.01)
+cb.outline.set_visible(false)
+cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+
+fig.subplots_adjust(left = 0.08, right = 0.98, bottom = 0.025,top=0.98,wspace=0.3)
+fig.savefig("Solid-map.pdf")
+
+stop
+####################################################
+# Plot median/worst case error examples
+####################################################
 ntrain = 10000
 widths = [128, 128, 128, 16]
 log_err = true

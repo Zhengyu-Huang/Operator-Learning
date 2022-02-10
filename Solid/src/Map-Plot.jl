@@ -93,6 +93,7 @@ end
 
 ntrain = 10000
 widths = [128, 128, 128, 16]
+log_err = true
 
 for ind = 2:3 # medians/worst-case
 
@@ -134,14 +135,23 @@ for i = 1:4
 
     vmin = 0
     vmax = 350
+    emin = 0
+    emax = 90
     @show minimum(minimum([outputs[:,ind],outputs[:,ind+3]]))
     @show maximum(maximum([outputs[:,ind],outputs[:,ind+3]]))
 
     @show minimum(broadcast(abs,outputs[:,ind]-outputs[:,ind+3]))
     @show maximum(broadcast(abs,outputs[:,ind]-outputs[:,ind+3]))
+    err = broadcast(abs,(outputs[:, ind + 3]-outputs[:,ind]))
+    
+
     visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i])
     im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i])
-    im4 = visσ(domain, ngp, 0, 90; σ=broadcast(abs,(outputs[:, ind + 3]-outputs[:,ind])), ax = ax2[4,i], mycolorbar="magma" )
+    if log_err
+        im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolorbar="magma" )
+    else
+        im4 = visσ(domain, ngp, emin, emax; σ=err, ax = ax2[4,i], mycolorbar="magma" )
+    end
 
     for j = 2:4
         ax2[j,i].spines["top"].set_visible(false)
@@ -160,7 +170,12 @@ for i = 1:4
         cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
         cax = fig2.add_axes([0.92,0.025, 0.015, 0.222])
-        cb = plt.colorbar(im4,cax=cax,ticks=[0, 30,60, 90])
+        if log_err 
+            cb = plt.colorbar(im4,cax=cax,ticks=[-3,-2,-1,0,1,2])
+            cb.ax.set_yticklabels([L"10^{-3}",L"10^{-2}",L"10^{-1}",L"10^{0}",L"10^{1}",L"10^{2}"])
+        else
+            cb = plt.colorbar(im4,cax=cax,ticks=[0, 30,60, 90])
+        end
         cb.outline.set_visible(false)
         cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
@@ -171,9 +186,18 @@ ax2[2,1].set_ylabel("True stress field",labelpad=26)
 ax2[3,1].set_ylabel("Predicted stress field",labelpad=26)
 ax2[4,1].set_ylabel("Stress field error",labelpad=26)
 fig2.subplots_adjust(left = 0.08, right = 0.9, bottom = 0.025,top=0.98,hspace=0.1,wspace=0.1)
-if ind==2
-    fig2.savefig("Solid-medians.pdf")
-elseif ind==3
-    fig2.savefig("Solid-worst.pdf")
+
+if log_err
+    if ind==2
+        fig2.savefig("Solid-medians-log.pdf")
+    elseif ind==3
+        fig2.savefig("Solid-worst-log.pdf")
+    end
+else
+    if ind==2
+        fig2.savefig("Solid-medians.pdf")
+    elseif ind==3
+        fig2.savefig("Solid-worst.pdf")
+    end
 end
 end

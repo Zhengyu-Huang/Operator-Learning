@@ -3,6 +3,17 @@ using LinearAlgebra
 using PyPlot
 include("../../plotdefaults.jl")
 
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+    mysize = 10
+    font0 = Dict(
+    "font.size" => 12,          # title
+    "axes.labelsize" => 12, # axes labels
+    "xtick.labelsize" => mysize,
+    "ytick.labelsize" => mysize,
+    "legend.fontsize" => mysize,
+    )
+merge!(rcParams, font0)
+
 function meshgrid(xin, yin)
   return  xin' .* ones(length(yin)) , ones(length(xin))' .* yin
 end
@@ -102,7 +113,7 @@ log_err = true
 for ind = 2:3 # median error
 
 ims = Array{Any}(undef,4,4)
-fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(7,6))
+fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(8,6))
 for i = 1:4
     nn_name = nn_names[i]
     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"

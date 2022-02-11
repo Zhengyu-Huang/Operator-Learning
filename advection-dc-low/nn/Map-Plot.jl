@@ -2,7 +2,11 @@ using NPZ
 using LinearAlgebra
 using PyPlot
 include("../../plotdefaults.jl")
-
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+font0 = Dict(
+    "lines.markersize" =>0.5,
+    )
+merge!(rcParams, font0)
 
 function meshgrid(xin, yin)
   return  xin' .* ones(length(yin)) , ones(length(xin))' .* yin
@@ -14,19 +18,21 @@ function input_plot(data, file_name)
     L = 1
     xx = LinRange(0, L, N_x)
     
-    fig = figure()
-    plot(xx, data, "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    fig = figure(figsize=(2,1.5))
+    plot(xx, data, "--o", fillstyle="none",markersize=1, color="#a1a1a1")
     ax = gca()
-    ax.set_title(L"a_0",pad = 20)   
+    ax.set_title(L"a_0",pad = 2)   
     ax.spines["top"].set_visible(false)
     ax.spines["right"].set_visible(false)
     ax.spines["left"].set_color("#808080")
+    ax.spines["left"].set_linewidth(0.3)
     ax.spines["bottom"].set_color("#808080")
+    ax.spines["bottom"].set_linewidth(0.3)
     ax[:set_xlim]([0,1])
-    ax.set_xlabel(L"x",labelpad=10)
-    ax[:xaxis][:set_tick_params](colors="#808080")
-    ax[:yaxis][:set_tick_params](colors="#808080")
-    plt.subplots_adjust(bottom = 0.2,top=.85)
+    ax.set_xlabel(L"x",labelpad=1)
+    ax[:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    plt.subplots_adjust(bottom = 0.2,top=.85,left=0.15)
 
     fig.savefig(file_name)
 end
@@ -37,19 +43,21 @@ function output_plot(data, file_name)
     L = 1
     xx = LinRange(0, L, N_x)
     
-    fig = figure()
-    plot(xx, data, "--o", fillstyle="none",markersize=6, color="#a1a1a1")
+    fig = figure(figsize=(2,1.5))
+    plot(xx, data, "--o", fillstyle="none",markersize=1, color="#a1a1a1")
     ax = gca()
-    ax.set_title(L"a(T)",pad = 20)   
+    ax.set_title(L"a(T)",pad = 2)   
     ax.spines["top"].set_visible(false)
     ax.spines["right"].set_visible(false)
     ax.spines["left"].set_color("#808080")
+    ax.spines["left"].set_linewidth(0.3)
     ax.spines["bottom"].set_color("#808080")
+    ax.spines["bottom"].set_linewidth(0.3)
     ax[:set_xlim]([0,1])
-    ax.set_xlabel(L"x",labelpad=10)
-    ax[:xaxis][:set_tick_params](colors="#808080")
-    ax[:yaxis][:set_tick_params](colors="#808080")
-    plt.subplots_adjust(bottom = 0.2,top=.85)
+    ax.set_xlabel(L"x",labelpad=1)
+    ax[:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    plt.subplots_adjust(bottom = 0.2,top=.85,left=0.15)
     fig.savefig(file_name)
 end
 

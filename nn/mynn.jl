@@ -72,12 +72,33 @@ function FNO_Para_Num(df, k, layers)
 end
 
 
-function compute_Para_Num()
+function compute_Para_Num(problem = "NS")
     # NS
-    layers = 4
-    n_in = 128
-    n_y = 2
-    k = 12^2
+    if problem == "NS"
+        layers = 4
+        n_in = 128
+        n_y = 2
+        k = 12^2
+    # Helmholtz
+    elseif problem == "Helmholtz"
+        layers = 4
+        n_in = 101
+        n_y = 2
+        k = 12^2
+    elseif problem == "Solid"
+        # Helmholtz
+        layers = 4
+        n_in = 21
+        n_y = 2
+        k = 12^2
+    elseif problem == "Advection"
+        layers = 4
+        n_in = 200
+        n_y = 2
+        k = 12
+    end
+
+
     for width in [16,64,128,256,512]
         @info "PCA-Net : ", PCA_Para_Num(n_in, width, layers)
         @info "DeepO-Net : ", DeepO_Para_Num(n_in, n_y, width, layers)

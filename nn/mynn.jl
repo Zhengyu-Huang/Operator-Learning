@@ -28,7 +28,8 @@ end
 
 function FNO_Net_Cost(df, k, layers, Np)
     #                 fourier fft/ifft        multiply    pointwise 
-    return Np*df + layers*(  df*(2*5*Np*log(Np) + 2*k*k - k + Np) + Np*(2*df*df)  )  +     Np*(2df-1)
+    d_i = d_o = 1
+    return 2*Np*df*d_i + layers*(  10*df*Np*log(Np) + k*(2*df^2 - df) + df*Np + Np*(2*df^2 - df)  )  +  2*Np*d_o*df
 end
 
 
@@ -68,7 +69,7 @@ end
 function FNO_Para_Num(df, k, layers)
     #                 fourier fft/ifft        multiply    pointwise 
     d_i = d_o = 1
-    return df*d_i + df + df*d_o + d_o + layers*(df^2 + df + df*k^2)
+    return df*d_i + df + df*d_o + d_o + layers*(df^2*k)
 end
 
 

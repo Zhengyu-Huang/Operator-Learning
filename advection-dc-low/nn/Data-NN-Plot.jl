@@ -316,10 +316,6 @@ plt.savefig("Advection-dc-low-Data-Error.pdf")
 
 
 
-
-
-
-
 # complexity
 Np=200
 layers = 4

@@ -7,7 +7,6 @@ using Random, Distributions
 include("PlatePull.jl")
 
 
-
 function map_plot(prefix = "../../data/", inds = [1000,1201])
 
     inputs   = npzread(prefix * "Random_UnitCell_Fn_100.npy")   
@@ -56,7 +55,7 @@ end
 ####################################################
 # Plot example input and output
 ####################################################
-prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+prefix = "../../data/"
 inputs   = npzread(prefix * "Random_UnitCell_Fn_100.npy")   
 outputs  = npzread(prefix * "Random_UnitCell_sigma_100.npy")
 XY = npzread(prefix * "Random_UnitCell_XY_100.npy")
@@ -100,7 +99,7 @@ cb = plt.colorbar(im,shrink=0.7,aspect = 15,pad = 0.01)
 cb.outline.set_visible(false)
 cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
-fig.subplots_adjust(left = 0.08, right = 0.98, bottom = 0.025,top=0.98,wspace=0.3)
+fig.subplots_adjust(left = 0.08, right = 0.97, bottom = 0.025,top=0.99,wspace=0.3)
 fig.savefig("Solid-map.pdf")
 
 ####################################################
@@ -133,7 +132,7 @@ for i = 1:4
 
     ax2[1,i].plot(xx, inputs[:, ind], "o",color="#808080",markersize=1, fillstyle="none")
     ax2[1,i].plot(px,py,color="#808080")
-    ax2[1,i].set_title(nns[i],pad = 5)
+    ax2[1,i].set_title(nns[i],pad = 5,fontsize=14)
     ax2[1,i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
     ax2[1,i].set_xticks([])
     ax2[1,i].set_ylim([-300,400])
@@ -160,8 +159,8 @@ for i = 1:4
     err = broadcast(abs,(outputs[:, ind + 3]-outputs[:,ind]))
     
 
-    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i])
-    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i])
+    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i], mycolorbar="viridis")
+    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i], mycolorbar="viridis")
     if log_err
         im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolorbar="magma" )
     else
@@ -196,11 +195,11 @@ for i = 1:4
 
     end
 end
-ax2[1,1].set_ylabel("Top loading "*L"\bar{t}(x)",labelpad=1)
-ax2[2,1].set_ylabel("True stress field",labelpad=26)
-ax2[3,1].set_ylabel("Predicted stress field",labelpad=26)
-ax2[4,1].set_ylabel("Stress field error",labelpad=26)
-fig2.subplots_adjust(left = 0.08, right = 0.9, bottom = 0.025,top=0.98,hspace=0.1,wspace=0.1)
+ax2[1,1].set_ylabel("Top loading "*L"\bar{t}(x)",labelpad=1,fontsize=10)
+ax2[2,1].set_ylabel("True\n stress field",labelpad=16,fontsize=10)
+ax2[3,1].set_ylabel("Predicted\n stress field",labelpad=16,fontsize=10)
+ax2[4,1].set_ylabel("Stress field\n error",labelpad=16,fontsize=10)
+fig2.subplots_adjust(left = 0.09, right = 0.9, bottom = 0.025,top=0.98,hspace=0.1,wspace=0.1)
 
 if log_err
     if ind==2

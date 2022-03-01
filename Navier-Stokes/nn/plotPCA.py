@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
 plt.rc("text", usetex=True)         # Crisp axis ticks
 plt.rc("font", family="serif")      # Crisp axis labels
-plt.rc("legend", edgecolor='none')  # No boxes around legends
+# plt.rc("legend", edgecolor="none")  # No boxes around legends
 
 plt.rc("figure",facecolor="#ffffff")
 plt.rc("axes",facecolor="#ffffff",edgecolor="#808080",labelcolor="#000000")
@@ -31,7 +31,7 @@ recomputePCA = False
 if recomputePCA:
     ntrain = M//2
     N_theta = 100
-    prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+    prefix = "../../data/"
     # theta = np.load(prefix+"Random_NS_theta_" + str(N_theta) + ".npy")   
     outputs = np.load(prefix+"Random_NS_omega_" + str(N_theta) + ".npy")
     inputs = np.load(prefix+"Random_NS_curl_f_" + str(N_theta) + ".npy")
@@ -77,10 +77,13 @@ plt.subplots_adjust(left=0.02,right=0.87,bottom=0.02,top=0.90)
 cax = []
 for i in range(3):
     temp = axs[i][3].get_position()
-    cax.append(subfigs[i].add_axes([0.9,temp.y0,0.02,temp.y1-temp.y0]))
+    cax.append(subfigs[i].add_axes([0.89,temp.y0,0.02,temp.y1-temp.y0]))
     cb = plt.colorbar(ims[i],cax=cax[i])
     cb.outline.set_visible(False)
     cb.ax.yaxis.set_tick_params(width=0.3)
+    for t in cb.ax.get_yticklabels():
+        t.set_fontsize(12)
+
 
 fig.savefig("NS-pca-vis.pdf")
 plt.close("all")

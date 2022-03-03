@@ -361,7 +361,7 @@ for i = 1:4
     ax[i][:xaxis][:set_tick_params](which="minor",bottom=false)
     ax[i].set_xticks([1e5, 1e7,1e9])
     ax[i].set_xticklabels([L"10^5",L"10^7",L"10^9"])
-    ax[i].set_xlabel("Evaluation complexity",labelpad=2)
+    ax[i].set_xlabel("Evaluation cost",labelpad=2)
 end
 ax[4].legend(frameon=false,handlelength=0)
 ax[1].set_ylabel("Test error")

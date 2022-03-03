@@ -56,20 +56,14 @@ axs = []
 for row,subfig in enumerate(subfigs):
     axs.append(subfig.subplots(1,4,sharey=True))
 ims = []
+print(xgrid.shape)
 for i in range(4):
     ims.append(axs[0][i].plot(xgrid,Ug[:, i],color="#262936"))
     ims.append(axs[1][i].plot(xgrid,DeepONetPCA_data[:,2*i],color="#262936"))
     ims.append(axs[2][i].plot(xgrid,DeepONetPCA_data[:,2*i+1],color="#262936",clip_on=False))
 
     axs[0][i].set_xticklabels([])
-    # axs[0][i].set_ylim([-0.12,0.12])
     axs[1][i].set_xticklabels([])
-    # axs[1][i].autoscale()
-
-    # axs[2][i].set_ylim([-0.25,0.25])
-    # if i>0:
-    #     axs[2][i].set_yticklabels([])
-    #     axs[0][i].set_yticklabels([])
 
 
     for j in range(3):

@@ -361,7 +361,7 @@ for i = 1:4
     ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i].set_xticks([1e6, 1e8,1e10])
     ax[i].set_xticklabels([L"10^6",L"10^8",L"10^{10}"])
-    ax[i].set_xlabel("Evaluation complexity",labelpad=2)
+    ax[i].set_xlabel("Evaluation cost",labelpad=2)
 end
 ax[3].legend(frameon=false,handlelength=0)
 ax[1].set_ylabel("Test error")

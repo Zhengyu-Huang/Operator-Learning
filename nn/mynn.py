@@ -489,11 +489,11 @@ class FNO2d(nn.Module):
         self.conv0 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
         self.conv1 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
         self.conv2 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
-        self.conv3 = SpectralConv2d(self.width, self.width, self.modes1, self.modes2)
+
         self.w0 = nn.Conv2d(self.width, self.width, 1)
         self.w1 = nn.Conv2d(self.width, self.width, 1)
         self.w2 = nn.Conv2d(self.width, self.width, 1)
-        self.w3 = nn.Conv2d(self.width, self.width, 1)
+        
 
         self.fc1 = nn.Linear(self.width, 1)
         # self.fc1 = nn.Linear(self.width, 128)
@@ -518,11 +518,6 @@ class FNO2d(nn.Module):
 
         x1 = self.conv2(x)
         x2 = self.w2(x)
-        x = x1 + x2
-        x = F.gelu(x)
-
-        x1 = self.conv3(x)
-        x2 = self.w3(x)
         x = x1 + x2
 
         # if self.padding > 0:
@@ -609,11 +604,11 @@ class FNO1d(nn.Module):
         self.conv0 = SpectralConv1d(self.width, self.width, self.modes1)
         self.conv1 = SpectralConv1d(self.width, self.width, self.modes1)
         self.conv2 = SpectralConv1d(self.width, self.width, self.modes1)
-        self.conv3 = SpectralConv1d(self.width, self.width, self.modes1)
+        
         self.w0 = nn.Conv1d(self.width, self.width, 1)
         self.w1 = nn.Conv1d(self.width, self.width, 1)
         self.w2 = nn.Conv1d(self.width, self.width, 1)
-        self.w3 = nn.Conv1d(self.width, self.width, 1)
+        
 
         self.fc1 = nn.Linear(self.width, 1)
       
@@ -637,11 +632,6 @@ class FNO1d(nn.Module):
 
         x1 = self.conv2(x)
         x2 = self.w2(x)
-        x = x1 + x2
-        x = F.gelu(x)
-
-        x1 = self.conv3(x)
-        x2 = self.w3(x)
         x = x1 + x2
 
         # x = x[..., :-self.padding] # pad the domain if input is non-periodic

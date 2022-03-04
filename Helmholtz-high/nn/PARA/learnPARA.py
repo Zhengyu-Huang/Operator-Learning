@@ -108,6 +108,7 @@ learning_rate = 0.001
 
 epochs = 100 if M == 20000 else 200
 step_size = 100
+
 gamma = 0.5
 
 layers = 4
@@ -150,5 +151,12 @@ for ep in range(epochs):
     print("Epoch : ", ep, " Epoch time : ", t2-t1, " Train L2 Loss : ", train_l2)
 
 
+    
+checkpoint = { 
+    'epoch': ep,
+    'model': model,
+    'optimizer': optimizer,
+    'lr_sched': scheduler}
+torch.save(checkpoint, 'checkpoint.pth'+str(N_neurons))
 
 print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)

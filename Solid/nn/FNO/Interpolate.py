@@ -4,7 +4,7 @@ from scipy import interpolate
 from timeit import default_timer
 
 N_theta = 100
-prefix = "/central/scratch/dzhuang/Helmholtz_data/"
+prefix = "../../../data/"
 sigma = np.load(prefix+"Random_UnitCell_sigma_" + str(N_theta) + ".npy")
 Fn = np.load(prefix+"Random_UnitCell_Fn_" + str(N_theta) + ".npy")
 XY = np.load(prefix+"Random_UnitCell_XY_" + str(N_theta) + ".npy")

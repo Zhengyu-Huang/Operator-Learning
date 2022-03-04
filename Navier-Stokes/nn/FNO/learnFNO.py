@@ -41,6 +41,8 @@ print(sys.argv)
 
 M = int(sys.argv[1]) #5000
 width = int(sys.argv[2])
+batch_size = int(sys.argv[3])
+
 
 N = 64
 ntrain = M//2
@@ -85,7 +87,6 @@ y_test = y_test.reshape(ntest,s,s,1)
 ################################################################
 # training and evaluation
 ################################################################
-batch_size = 16
 
 train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_train, y_train), batch_size=batch_size, shuffle=True)
 test_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_test, y_test), batch_size=batch_size, shuffle=False)

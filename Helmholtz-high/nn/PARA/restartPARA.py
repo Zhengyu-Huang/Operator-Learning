@@ -105,30 +105,34 @@ train_loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x_trai
 
 
 learning_rate = 0.001
-
-epochs = 100
-step_size = 100
+epochs = 200
 gamma = 0.5
-
 layers = 4
+
+
+# epochs = 4
+# step_size = 2
 
 # model = FNN(r_f + 2, 1, layers, N_neurons) 
  
-model = torch.load("PARANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model", map_location=device)
-model.to(device)
+# model = torch.load("PARANet_"+str(N_neurons)+"Nd_"+str(ntrain)+".model", map_location=device)
+# model.to(device)
+# optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
 
-print(count_params(model))
-model.to(device)
 
+checkpoint = torch.load('checkpoint.pth'+str(N_neurons), map_location=device)
+epoch = checkpoint['epoch']
+model = checkpoint['model']
+optimizer = checkpoint['optimizer']
+scheduler = checkpoint['lr_sched']
 
-optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
 
 myloss = torch.nn.MSELoss(reduction='sum')
 y_normalizer.cuda()
 t0 = default_timer()
-for ep in range(epochs):
+for ep in range(epoch+1, epochs):
     model.train()
     t1 = default_timer()
     train_l2 = 0
@@ -156,5 +160,11 @@ for ep in range(epochs):
     print("Epoch : ", ep, " Epoch time : ", t2-t1, " Train L2 Loss : ", train_l2)
 
 
+checkpoint = { 
+    'epoch': ep,
+    'model': model,
+    'optimizer': optimizer,
+    'lr_sched': scheduler}
+torch.save(checkpoint, 'checkpoint-restart.pth'+str(N_neurons))
 
 print("Total time is :", default_timer() - t0, "Total epoch is ", epochs)

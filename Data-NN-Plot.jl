@@ -1,6 +1,6 @@
 using LinearAlgebra
 using PyPlot
-# include("nn/mynn.jl")
+include("nn/mynn.jl")
 include("plotdefaults.jl")
 
 PCA_Data_Helmholtz = 
@@ -814,7 +814,36 @@ FNO_Data_adv =
   20000    32  NaN       0.11978913526094984   0.1349443169841543
 ]
 
+
+
+
+
 PCA_Data = cat(PCA_Data_NS,PCA_Data_Helmholtz,PCA_Data_Solid,PCA_Data_adv,dims=3)
 DeepONet_Data = cat(DeepONet_Data_NS,DeepONet_Data_Helmholtz,DeepONet_Data_Solid,DeepONet_Data_adv,dims=3)
 FNO_Data = cat(FNO_Data_NS,FNO_Data_Helmholtz,FNO_Data_Solid,FNO_Data_adv,dims=3)
 PARA_Data = cat(PARA_Data_NS,PARA_Data_Helmholtz,PARA_Data_Solid[1:35,:],PARA_Data_adv[1:35,:],dims=3)
+
+
+# compute the cost
+
+
+# complexity
+Nps=[64^2 101^2 41^2  200]
+n_ins = [128 101 21 200]
+
+for i = 1:4 
+  for j = 1:size(PCA_Data)[1]
+      PCA_Data[j, 3, i] = PCA_Net_Cost(n_ins[i], PCA_Data[j, 2, i],4, Nps[i])
+  end
+  for j = 1:size(DeepONet_Data)[1]
+      DeepONet_Data[j, 3, i] = DeepO_Net_Cost(n_ins[i], DeepONet_Data[j, 2, i],4, Nps[i])
+  end
+  for j = 1:size(PARA_Data)[1]
+      PARA_Data[j, 3, i] = PARA_Net_Cost(n_ins[i], 1, PARA_Data[j, 2, i],4, Nps[i])
+  end
+
+  kmax = i < 4 ? 12^2 : 12
+  for j = 1:size(FNO_Data)[1]
+      FNO_Data[j, 3, i] = FNO_Net_Cost(FNO_Data[j, 2, i], kmax, 3, Nps[i])
+  end
+end

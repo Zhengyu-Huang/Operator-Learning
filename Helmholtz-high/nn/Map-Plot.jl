@@ -153,8 +153,8 @@ nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
 ntrain = 10000
 widths = [128, 128, 128, 16]
 
-imin = 19
-imax = 36
+imin = 19.5
+imax = 20.4
 omin = -0.1
 omax = 0.1
 
@@ -163,7 +163,7 @@ log_err = true
 for ind = 2:3 # median error
 
 ims = Array{Any}(undef,4,4)
-fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(8,6))
+fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(6.5,6.5))
 for i = 1:4
     nn_name = nn_names[i]
     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
@@ -181,7 +181,7 @@ for i = 1:4
     err = broadcast(abs,outputs[:,:,ind]-outputs[:,:,ind+3])
     @show minimum(err), maximum(err)
 
-    ims[1,i] = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud")
+    ims[1,i] = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin=imin,vmax=imax)
     ims[2,i] = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=omin, vmax =omax)
     ims[3,i] = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=omin, vmax =omax)
     if log_err
@@ -214,20 +214,15 @@ ax[1,1].set_ylabel(L"c",labelpad=5,fontsize=14)
 ax[2,1].set_ylabel("True "*L"u",labelpad=5,fontsize=14)
 ax[3,1].set_ylabel("Predicted "*L"u",labelpad=5,fontsize=14)
 ax[4,1].set_ylabel("Error in "*L"u",labelpad=5,fontsize=14)
-plt.subplots_adjust(left = 0.02, right = 0.92, bottom = 0.025,top=.95,hspace=0.2,wspace=0.1)
 
-for i = 1:4
-    temp = ax[1,i].get_position()
-    xw = temp.x1-temp.x0
-    cax = fig.add_axes([temp.x1+0.03*xw, temp.y0, 0.07*xw, temp.y1-temp.y0],frameon=false)
-    if i == 3
-        cb = plt.colorbar(ims[1,i],cax=cax)
-    else
-        cb = plt.colorbar(ims[1,i],cax=cax,ticks=[19.8,20,20.2])
-    end
-    cb.outline.set_visible(false)
-    cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-end
+plt.subplots_adjust(left = 0.05, right = 0.87, bottom = 0.025,top=0.95,hspace=0.1,wspace=0.1)
+
+temp = ax[1,4].get_position()
+xw = temp.x1-temp.x0
+cax1 = fig.add_axes([temp.x1+0.1*xw,temp.y0,0.1*xw,temp.y1-temp.y0])
+cb1 = plt.colorbar(ims[1,4],cax=cax1)
+cb1.outline.set_visible(false)
+cb1.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
 temp = ax[2,4].get_position()
 temp2 = ax[3,4].get_position()

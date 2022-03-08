@@ -70,60 +70,9 @@ function map_plot(prefix = "../src/", inds = [1,11])
 end
 
 
-
-# i = 0, 1, 2 smallest, median, largest
-function prediction_plot(nn_name, ntrain, width, ind)
-    err = ["s", "m", "l"]
-    inputfile = nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_input_save.npy"
-    outputfile = nn_name * "/" * string(ntrain) * "_" * string(width) * "_test_output_save.npy"
-    inputs   = npzread(inputfile)   
-    outputs  = npzread(outputfile)
-    
-    N_x, _ = size(inputs)
-    L = 1
-    xx = LinRange(0, L, N_x)
-    
-    fig, ax = PyPlot.subplots(ncols = 3, sharex=true, sharey=true, figsize=(18,6))
-    
-    ax[1].plot(xx, inputs[:, ind], "--o", fillstyle="none", color="C0")
-    ax[2].plot(xx, outputs[:, ind], "--o", fillstyle="none", color="C1")
-    ax[3].plot(xx, outputs[:, ind+3], "--o", fillstyle="none", color="C2")
-    for i =1:3
-        ax[i].spines["top"].set_visible(false)
-        ax[i].spines["right"].set_visible(false)
-        ax[i].spines["left"].set_color("#808080")
-        ax[i].spines["bottom"].set_color("#808080")
-    end
-    
-    @info "error is: ", norm(outputs[:, ind+3] - outputs[:, ind])/norm(outputs[:, ind])
-    
-    fig.tight_layout()
-    fig.savefig("Advection-low-" * err[ind] * "_" * nn_name * "_" * string(ntrain) * "_" * string(width)* ".pdf")
-    
-end
-
 nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
 map_plot("../src/")
-# prediction_plot("PCA", 10000, 128, 1)
-# prediction_plot("PCA", 10000, 128, 2)
-# prediction_plot("PCA", 10000, 128, 3)
 
-# prediction_plot("FNO", 10000, 16, 1)
-# prediction_plot("FNO", 10000, 16, 2)
-# prediction_plot("FNO", 10000, 16, 3)
-
-
-# prediction_plot("DeepONet", 10000, 128, 1)
-# prediction_plot("DeepONet", 10000, 128, 2)
-# prediction_plot("DeepONet", 10000, 128, 3)
-
-
-# prediction_plot("PARA", 10000, 128, 1)
-# prediction_plot("PARA", 10000, 128, 2)
-# prediction_plot("PARA", 10000, 128, 3)
-
-# prediction_plot("DeepONet", 10000, 128)
-# prediction_plot("FNO", 10000, 16)
 
 ntrain = 10000
 widths = [128, 128, 128, 16]
@@ -140,9 +89,9 @@ for i = 1:4
     L = 1
     xx = LinRange(0, L, N_x)
 
-    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none", color="#a1a1a1")
-    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",color="#a1a1a1")
-    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none",color=colors[i])
+    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none", color="#a1a1a1",markersize=1)
+    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",color="#a1a1a1",markersize=1)
+    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none",color=colors[i],markersize=1)
 
     ax[1,i].set_title(nns[i],pad = 2)
     ax[3,i].set_xlabel(L"x",labelpad=1)
@@ -177,9 +126,9 @@ for i = 1:4
     L = 1
     xx = LinRange(0, L, N_x)
 
-    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none",color="#a1a1a1")
-    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",color="#a1a1a1")
-    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none", color=colors[i],clip_on=false)
+    ax[1,i].plot(xx, inputs[:, ind], "--o", fillstyle="none",color="#a1a1a1",markersize=1)
+    ax[2,i].plot(xx, outputs[:, ind], "--o", fillstyle="none",color="#a1a1a1",markersize=1)
+    ax[3,i].plot(xx, outputs[:, ind+3], "--o", fillstyle="none", color=colors[i],clip_on=false,markersize=1)
 
     ax[1,i].set_title(nns[i],pad = 2)
     ax[3,i].set_xlabel(L"x",labelpad=1)

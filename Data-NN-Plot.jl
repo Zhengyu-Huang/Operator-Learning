@@ -833,7 +833,7 @@ FNO_Data_adv =
 PCA_Data = cat(PCA_Data_NS,PCA_Data_Helmholtz,PCA_Data_Solid,PCA_Data_adv,dims=3)
 DeepONet_Data = cat(DeepONet_Data_NS,DeepONet_Data_Helmholtz,DeepONet_Data_Solid,DeepONet_Data_adv,dims=3)
 FNO_Data = cat(FNO_Data_NS,FNO_Data_Helmholtz,FNO_Data_Solid,FNO_Data_adv,dims=3)
-PARA_Data = cat(PARA_Data_NS,PARA_Data_Helmholtz,PARA_Data_Solid[1:35,:],PARA_Data_adv[1:35,:],dims=3)
+PARA_Data = cat(PARA_Data_NS,PARA_Data_Helmholtz,PARA_Data_Solid,PARA_Data_adv,dims=3)
 
 
 # compute the cost

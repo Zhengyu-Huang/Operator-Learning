@@ -108,6 +108,6 @@ function compute_Para_Num(problem = "NS")
 
 
     for df in [2,4,8,16,32]
-        @info "FNO : ", FNO_Para_Num(df, k, layers)
+        @info "FNO : ", FNO_Para_Num(df, k, 3)
     end
 end

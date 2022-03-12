@@ -3,7 +3,18 @@ using PyPlot
 include("../../nn/mynn.jl")
 include("../../plotdefaults.jl")
 
-
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+    mysize = 7
+    font0 = Dict(
+    "font.size" => 10,          # title
+    "axes.labelsize" => 8, # axes labels
+    "xtick.labelsize" => mysize,
+    "ytick.labelsize" => mysize,
+    "legend.fontsize" => mysize,
+    "lines.linewidth" => 0.7,
+    "lines.markersize" =>2.5,
+    )
+merge!(rcParams, font0)
 
 # #  Data  | width | cost  |  Training-Time | Test-Error  |  
 # PCA_Data = 
@@ -431,20 +442,23 @@ for i = 1:4
     ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
 end
-ax[1].legend(frameon=false,handlelength=3.4)
+ax[4].legend(frameon=false,handlelength=3.4,fontsize=7)
 ax[1].set_ylabel("Test error")
 
 i=1
 ax[1].set_xticks(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[1].set_xticklabels(["16","","128","256","512"])
 ax[1].set_xlabel("Network width "*L"w",labelpad=5)
 ax[2].set_xticks(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[2].set_xticklabels(["16","","128","256","512"])
 ax[2].set_xlabel("Network width "*L"w",labelpad=5)
 ax[3].set_xticks(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[3].set_xticklabels(["16","","128","256","512"])
 ax[3].set_xlabel("Network width "*L"w",labelpad=5)
 ax[4].set_xticks(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2])
-ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=2)
+ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=5)
 
-plt.tight_layout()
+plt.subplots_adjust(bottom=0.25,top=0.85,left=0.07,right=0.98)
 plt.savefig("Helmholtz-Width-Error.pdf")
 
 
@@ -475,7 +489,7 @@ ax[4].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], 
 ax[4].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none",      label =  nns[4]  )
 
 for i = 1:4
-    ax[i].set_title(sizes[i],pad=10)
+    ax[i].set_title(sizes[i],pad=11,fontsize=11)
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
@@ -484,7 +498,6 @@ for i = 1:4
     ax[i].spines["bottom"].set_linewidth(0.3)
     ax[i].set_xticks(N_Data[2:2:end])
     ax[i].set_xticklabels(N_Data[2:2:end])
-    # ax[i].set_yticks(plot2_yticks)
 
     ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
@@ -492,20 +505,10 @@ for i = 1:4
     ax[i][:yaxis][:set_tick_params](which="minor",left=false) # remove minor ytick labels?
     ax[i].set_xlabel(latexstring("Training data ",L"N"),labelpad=2)
 end
-# ax[1].set_yticklabels(plot2_yticks)
 ax[1].set_ylabel("Test error")
-
-fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.87),ncol=4,frameon=false)
-plt.tight_layout()
+fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.92),ncol=4,frameon=false,fontsize=8)
+plt.subplots_adjust(bottom=0.2,top=0.8,left=0.08,right=0.98)
 plt.savefig("Helmholtz-Data-Error.pdf")
-
-
-
-
-
-
-
-
 
 # complexity
 Np=101*101
@@ -527,18 +530,25 @@ end
 
 fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=(6.5,1.625))
 
+i = 1
+ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[1], fillstyle="none",      label =  nns[1]  )
+ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[2], fillstyle="none", label =  nns[2]  )
+ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[3], fillstyle="none",label=nns[3])
+ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none",      label =  nns[4]  )
+ax[i].set_title(L"N = "*string(Int(FNO_Data[(i+3)*5+1, 1])),pad=11,fontsize=11)   
 
-for i = 1:4
-    ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[1], fillstyle="none",      label =  nns[1]  )
-    ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[2], fillstyle="none", label =  nns[2]  )
+for i = 2:4
+    ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[1], fillstyle="none")
+    ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[2], fillstyle="none")
     
     if i < 4
-        ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[3], fillstyle="none",     label =  nns[3]  )
+        ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[3], fillstyle="none")
     end
     
-    ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none",      label =  nns[4]  )
- ax[i].title.set_text("N = "*string(Int(FNO_Data[(i+3)*5+1, 1])))   
+    ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none" )
+ ax[i].set_title(L"N = "*string(Int(FNO_Data[(i+3)*5+1, 1])),pad=11,fontsize=11)   
 end
+
 
 for i = 1:4
     ax[i].spines["top"].set_visible(false)
@@ -552,16 +562,12 @@ for i = 1:4
     ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
     # ax[i].set_xticks([1e5, 1e7,1e9])
     # ax[i].set_xticklabels([L"10^5",L"10^7",L"10^9"])
-    ax[i].set_xlabel("Evaluation complexity",labelpad=2)
+    ax[i].set_xlabel("Evaluation cost",labelpad=2)
 end
-ax[1].legend(frameon=false,handlelength=0)
+# ax[1].legend(frameon=false,handlelength=0)
 ax[1].set_ylabel("Test error")
 
-plt.tight_layout()
+# plt.subplots_adjust(bottom=0.22,top=0.85,left=0.07,right=0.98)
+fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.92),ncol=4,frameon=false,fontsize=8,handlelength=0)
+plt.subplots_adjust(bottom=0.22,top=0.8,left=0.08,right=0.98)
 plt.savefig("Helmholtz-Cost-Error.pdf")
-
-
-
-
-
-

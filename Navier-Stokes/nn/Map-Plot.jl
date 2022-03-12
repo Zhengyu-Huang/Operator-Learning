@@ -2,7 +2,14 @@ using NPZ
 using LinearAlgebra
 using PyPlot
 include("../../plotdefaults.jl")
-
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+    mysize = 12
+    font0 = Dict(
+    "xtick.labelsize" => mysize,
+    "ytick.labelsize" => mysize,
+    "legend.fontsize" => mysize,
+    )
+merge!(rcParams, font0)
 
 function meshgrid(xin, yin)
   return  xin' .* ones(length(yin)) , ones(length(xin))' .* yin
@@ -60,7 +67,8 @@ end
 ####################################################
 # Plot example input and output
 ####################################################
-prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+# prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+prefix = "../../data/"
 inputs   = npzread(prefix * "Random_NS_curl_f_100.npy")   
 outputs  = npzread(prefix * "Random_NS_omega_100.npy")
 sample_ind = 1
@@ -94,9 +102,9 @@ for i = 1:2
     ax[i].set_xticklabels(["0",L"\pi",L"2\pi"])
 end
 ax[1].set_ylabel(L"y")
-ax[1].set_title(L"\nabla\times f")
+ax[1].set_title(L"f'")
 ax[2].set_title(L"\omega(T)")
-fig.subplots_adjust(left=0.1,right=0.95,bottom=0.025,top=0.975,wspace=0.3)
+fig.subplots_adjust(left=0.1,right=0.92,bottom=0.05,top=0.975,wspace=0.3)
 fig.savefig("NS-map.pdf")
 
 
@@ -108,6 +116,7 @@ ntrain = 10000
 widths = [128, 128, 128, 16]
 log_err = true
 for ind = 2:3 # median error
+    ims = Array{Any}(undef,4,4)
 fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(6.5,6))
 for i = 1:4
     nn_name = nn_names[i]
@@ -135,15 +144,15 @@ for i = 1:4
     err = broadcast(abs,outputs[:,:,ind]-outputs[:,:,ind+3])
     @show minimum(err), maximum(err)
     
-    im1 = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin = imin,vmax = imax)
-    im2 = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=omin, vmax =omax)
-    im3 = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=omin, vmax =omax)
+    ims[1,i] = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin = imin,vmax = imax)
+    ims[2,i] = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=omin, vmax =omax)
+    ims[3,i] = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=omin, vmax =omax)
     if log_err
-        im4 = ax[4,i].pcolormesh(X,Y,broadcast(log10,err),shading="gouraud",cmap="magma",vmin=lemin,vmax=lemax)
+        ims[4,i] = ax[4,i].pcolormesh(X,Y,broadcast(log10,err),shading="gouraud",cmap="magma",vmin=lemin,vmax=lemax)
     else
-        im4 = ax[4,i].pcolormesh(X,Y,err,shading="gouraud",cmap="magma",vmin=emin,vmax=emax)
+        ims[4,i] = ax[4,i].pcolormesh(X,Y,err,shading="gouraud",cmap="magma",vmin=emin,vmax=emax)
     end
-    ax[1,i].set_title(nns[i],pad = 5)
+    ax[1,i].set_title(nns[i],pad = 5,fontsize=16)
 
     for j = 1:4
         ax[j,i].spines["top"].set_visible(false)
@@ -154,36 +163,40 @@ for i = 1:4
         ax[j,i].set_yticks([])
         ax[j,i].set_xticks([])
     end
-    
-    if i == 4
-        cax = fig.add_axes([0.92, 0.735368, 0.015, 0.21415],frameon=false)
-        cb = plt.colorbar(im1,cax=cax, ticks=[-0.02,-0.01, 0, 0.01,0.02],drawedges=false)
-        cb.outline.set_visible(false)
-        cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-
-        cax2 = fig.add_axes([0.92,0.262112, 0.015, 0.450775])
-        cb2 = plt.colorbar(im2,cax=cax2,ticks=[-0.2,-0.1,0,0.1,0.2])
-        cb2.outline.set_visible(false)
-        cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-
-        # bottom err colorbar
-        cax3 = fig.add_axes([0.92,0.02548,0.015,0.21415])
-        if log_err
-        cb3 = plt.colorbar(im4,cax=cax3,ticks=[-9,-7,-5,-3,-1])
-        cb3.ax.set_yticklabels([L"10^{-9}",L"10^{-7}",L"10^{-5}",L"10^{-3}",L"10^{-1}"])
-        else
-            cb3 = plt.colorbar(im4,cax=cax3,ticks=[0, 0.025, 0.05])
-        end
-        cb3.outline.set_visible(false)
-        cb3.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-    end
 end
 
-ax[1,1].set_ylabel(L"\nabla\times f",labelpad=5)
-ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5)
-ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5)
-ax[4,1].set_ylabel(L"\omega(T)"*" error",labelpad=5)
-plt.subplots_adjust(left = 0.05, right = 0.9, bottom = 0.025,top=.95,hspace=0.1,wspace=0.1)
+ax[1,1].set_ylabel(L"f'",labelpad=5,fontsize=14)
+ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5,fontsize=14)
+ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5,fontsize=14)
+ax[4,1].set_ylabel(L"\omega(T)"*" error",labelpad=5,fontsize=14)
+plt.subplots_adjust(left = 0.05, right = 0.86, bottom = 0.025,top=.95,hspace=0.1,wspace=0.1)
+
+temp = ax[1,4].get_position()
+xw = temp.x1-temp.x0
+cax = fig.add_axes([temp.x1+0.1*xw, temp.y0, 0.1*xw, temp.y1-temp.y0],frameon=false)
+cb = plt.colorbar(ims[1,4],cax=cax, ticks=[-0.02, 0, 0.02],drawedges=false)
+cb.outline.set_visible(false)
+cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+
+temp = ax[2,4].get_position()
+temp2 = ax[3,4].get_position()
+xw = temp.x1-temp.x0
+cax2 = fig.add_axes([temp.x1+0.1*xw,temp2.y0, 0.1*xw, temp.y1-temp2.y0])
+cb2 = plt.colorbar(ims[2,4],cax=cax2,ticks=[-0.2,-0.1,0,0.1,0.2])
+cb2.outline.set_visible(false)
+cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+
+temp = ax[4,4].get_position()
+cax3 = fig.add_axes([temp.x1+0.1*xw,temp.y0,0.1*xw, temp.y1-temp.y0])
+if log_err
+    cb3 = plt.colorbar(ims[4,4],cax = cax3,ticks=[-9,-7,-5,-3,-1])
+    cb3.ax.set_yticklabels([L"10^{-9}",L"10^{-7}",L"10^{-5}",L"10^{-3}",L"10^{-1}"])
+else
+    cb3 = plt.colorbar(im4,cax=cax3,ticks=[0, 0.025, 0.05])
+end
+cb3.outline.set_visible(false)
+cb3.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+
 if log_err
     if ind==2
         plt.savefig("NS-medians-log.pdf")
@@ -198,76 +211,3 @@ else
     end
 end
 end
-
-# #####################################
-# ind = 3 # largest error
-
-# # loop through all NNs once to get shared color axes
-# clims = zeros((3,2))
-# for i = 1:4
-#     nn_name = nn_names[i]
-#     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
-#     outputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_output_save.npy"
-#     inputs   = npzread(inputfile)   
-#     outputs  = npzread(outputfile)
-
-#     clims[1,1] = minimum([clims[1,1],minimum(inputs[:,:,ind])])
-#     clims[1,2] = maximum([clims[1,2],maximum(inputs[:,:,ind])])
-#     clims[2,1] = minimum([clims[2,1],minimum(outputs[:,:,ind])])
-#     clims[2,2] = maximum([clims[2,2],maximum(outputs[:,:,ind])])
-#     clims[3,1] = minimum([clims[3,1],minimum(outputs[:,:,ind+3])])
-#     clims[3,2] = maximum([clims[3,2],maximum(outputs[:,:,ind+3])])
-# end
-# @show clims
-
-
-# fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(6.5,4))
-# for i = 1:4
-#     nn_name = nn_names[i]
-#     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
-#     outputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_output_save.npy"
-#     inputs   = npzread(inputfile)   
-#     outputs  = npzread(outputfile)
-    
-#     N_x, _ = size(inputs)
-#     L = 1
-#     xx = LinRange(0, L, N_x)
-#     Y, X = meshgrid(xx, xx)
-
-#     vmin, vmax = minimum(outputs[:, :, ind]), maximum(outputs[:, :, ind])
-
-#     im1 = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin = clims[1,1],vmax = clims[1,2])
-#     im2 = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
-#     im3 = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
-
-#     ax[1,i].set_title(nns[i],pad = 5)
-#     # ax[3,i].set_xlabel(L"x",labelpad=10)
-
-#     for j = 1:3
-#         ax[j,i].spines["top"].set_visible(false)
-#         ax[j,i].spines["right"].set_visible(false)
-#         ax[j,i].spines["left"].set_visible(false)
-#         ax[j,i].spines["bottom"].set_visible(false)
-#         ax[j,i].set_aspect("equal", "box")
-#         ax[j,i].set_yticks([])
-#         ax[j,i].set_xticks([])
-#     end
-    
-#     if i == 4
-#         cax = fig.add_axes([0.92, 0.628, 0.015, 0.27],frameon=false)
-#         cb = plt.colorbar(im1,cax=cax, ticks=[-0.02, 0, 0.02],drawedges=false)
-#         cb.outline.set_visible(false)
-#         cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-
-#         cax2 = fig.add_axes([0.92,0.025, 0.015, 0.575])
-#         cb2 = plt.colorbar(im2,cax=cax2,ticks=[-0.1,0,0.1])
-#         cb2.outline.set_visible(false)
-#         cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-#     end
-# end
-
-# ax[1,1].set_ylabel(L"\nabla\times f",labelpad=5)
-# ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5)
-# ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5)
-# plt.subplots_adjust(left = 0.05, right = 0.9, bottom = 0.025,top=.9,hspace=0.1,wspace=0.1)
-# plt.savefig("NS-worst.pdf")

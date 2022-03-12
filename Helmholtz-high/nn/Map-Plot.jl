@@ -98,13 +98,63 @@ function prediction_plot(nn_name, ntrain, width, ind)
     
 end
 
-# map_plot("../../data/")
+prefix = "../../data/"
+inputs   = npzread(prefix * "Random_Helmholtz_high_cs_100.npy")   
+outputs  = npzread(prefix * "Random_Helmholtz_high_K_100.npy") #this is actuallythe solution u
+sample_ind = 1
+L = 1
+N_x, _ = size(inputs[:,:,sample_ind])
+xx = LinRange(0, L, N_x)
+Y, X = meshgrid(xx, xx)
+
+fig,ax = PyPlot.subplots(1,2,sharex=true,sharey=true,figsize=(4.5,2))
+im1 = ax[1].pcolormesh(X, Y, inputs[:,:,sample_ind],  shading="gouraud")
+cb1 = plt.colorbar(im1,ax=ax[1],shrink=0.68,aspect=15)
+cb1.outline.set_visible(false)
+cb1.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+im2 = ax[2].pcolormesh(X, Y, outputs[:,:,sample_ind],  shading="gouraud")
+cb2 = plt.colorbar(im2,ax=ax[2],shrink=0.68,aspect=15,ticks=[-0.03, 0, 0.03])
+cb2.outline.set_visible(false)
+cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+
+for i = 1:2
+    ax[i].set_aspect("equal","box")
+    ax[i].spines["left"].set_visible(false)
+    ax[i].spines["right"].set_visible(false)
+    ax[i].spines["bottom"].set_visible(false)
+    ax[i].spines["top"].set_visible(false)
+    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i].set_xlabel(L"x")
+    ax[i].set_yticks([0,0.5,1])
+    # ax[i].set_yticklabels(["0",L"\pi",L"2\pi"])
+    ax[i].set_xticks([0,0.5,1])
+    # ax[i].set_xticklabels(["0",L"\pi",L"2\pi"])
+end
+ax[1].set_ylabel(L"y")
+ax[1].set_title(L"c")
+ax[2].set_title(L"u")
+fig.subplots_adjust(left=0.13,right=0.92,bottom=0.07,top=0.98,wspace=0.3)
+fig.savefig("Helmholtz-map.pdf")
+
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+    mysize = 12
+    font0 = Dict(
+    "font.size" => 12,          # title
+    "axes.labelsize" => 12, # axes labels
+    "xtick.labelsize" => mysize,
+    "ytick.labelsize" => mysize,
+    "legend.fontsize" => mysize,
+    )
+merge!(rcParams, font0)
+
+
 nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
 ntrain = 10000
 widths = [128, 128, 128, 16]
 
-imin = 19
-imax = 36
+imin = 19.5
+imax = 20.4
 omin = -0.1
 omax = 0.1
 
@@ -113,7 +163,7 @@ log_err = true
 for ind = 2:3 # median error
 
 ims = Array{Any}(undef,4,4)
-fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(8,6))
+fig, ax = PyPlot.subplots(4,4, sharex=true, sharey=true, figsize=(6.5,6.5))
 for i = 1:4
     nn_name = nn_names[i]
     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
@@ -131,7 +181,7 @@ for i = 1:4
     err = broadcast(abs,outputs[:,:,ind]-outputs[:,:,ind+3])
     @show minimum(err), maximum(err)
 
-    ims[1,i] = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud")
+    ims[1,i] = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin=imin,vmax=imax)
     ims[2,i] = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=omin, vmax =omax)
     ims[3,i] = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=omin, vmax =omax)
     if log_err
@@ -147,7 +197,7 @@ for i = 1:4
             ims[4,i] = ax[4,i].pcolormesh(X, Y, err,shading="gouraud",vmin=0,vmax=0.1,cmap="magma")
         end
     end
-    ax[1,i].set_title(nns[i],pad = 5)
+    ax[1,i].set_title(nns[i],pad = 5,fontsize=16)
 
     for j = 1:4
         ax[j,i].spines["top"].set_visible(false)
@@ -160,31 +210,30 @@ for i = 1:4
     end
 end
 
-ax[1,1].set_ylabel(L"c",labelpad=5)
-ax[2,1].set_ylabel("True "*L"u",labelpad=5)
-ax[3,1].set_ylabel("Predicted "*L"u",labelpad=5)
-ax[4,1].set_ylabel("Error in "*L"u",labelpad=5)
-plt.subplots_adjust(left = 0.02, right = 0.95, bottom = 0.025,top=.95,hspace=0.2,wspace=0.1)
+ax[1,1].set_ylabel(L"c",labelpad=5,fontsize=14)
+ax[2,1].set_ylabel("True "*L"u",labelpad=5,fontsize=14)
+ax[3,1].set_ylabel("Predicted "*L"u",labelpad=5,fontsize=14)
+ax[4,1].set_ylabel("Error in "*L"u",labelpad=5,fontsize=14)
 
-for i = 1:4
-    temp = ax[1,i].get_position()
-    xw = temp.x1-temp.x0
-    cax = fig.add_axes([temp.x1+0.03*xw, temp.y0, 0.07*xw, temp.y1-temp.y0],frameon=false)
-    cb = plt.colorbar(ims[1,i],cax=cax)
-    cb.outline.set_visible(false)
-    cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-end
+plt.subplots_adjust(left = 0.05, right = 0.87, bottom = 0.025,top=0.95,hspace=0.1,wspace=0.1)
+
+temp = ax[1,4].get_position()
+xw = temp.x1-temp.x0
+cax1 = fig.add_axes([temp.x1+0.1*xw,temp.y0,0.1*xw,temp.y1-temp.y0])
+cb1 = plt.colorbar(ims[1,4],cax=cax1)
+cb1.outline.set_visible(false)
+cb1.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
 temp = ax[2,4].get_position()
 temp2 = ax[3,4].get_position()
 xw = temp.x1-temp.x0
-cax2 = fig.add_axes([temp.x1+0.03*xw,temp2.y0, 0.07*xw, temp.y1-temp2.y0])
+cax2 = fig.add_axes([temp.x1+0.1*xw,temp2.y0, 0.1*xw, temp.y1-temp2.y0])
 cb2 = plt.colorbar(ims[2,4],cax=cax2,ticks=[-0.1,-0.05,0,0.05,0.1])
 cb2.outline.set_visible(false)
 cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
 temp = ax[4,4].get_position()
-cax3 = fig.add_axes([temp.x1+0.03*xw,temp.y0,0.07*xw, temp.y1-temp.y0])
+cax3 = fig.add_axes([temp.x1+0.1*xw,temp.y0,0.1*xw, temp.y1-temp.y0])
 if log_err
     cb3 = plt.colorbar(ims[4,4],cax = cax3,ticks = [-10,-8,-6,-4,-2,0,2])
     cb3.ax.set_yticklabels([L"10^{-10}",L"10^{-8}",L"10^{-6}",L"10^{-4}",L"10^{-2}",L"10^0",L"10^2"])
@@ -234,55 +283,3 @@ for i = 1:4
     clims[3,2] = maximum([clims[3,2],maximum(outputs[:,:,ind+3])])
 end
 @show clims
-
-# fig, ax = PyPlot.subplots(3,4, sharex=true, sharey=true, figsize=(6.5,4))
-# for i = 1:4
-#     nn_name = nn_names[i]
-#     inputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_input_save.npy"
-#     outputfile = nn_name * "/" * string(ntrain) * "_" * string(widths[i]) * "_test_output_save.npy"
-#     inputs   = npzread(inputfile)   
-#     outputs  = npzread(outputfile)
-    
-#     N_x, _ = size(inputs)
-#     L = 1
-#     xx = LinRange(0, L, N_x)
-#     Y, X = meshgrid(xx, xx)
-
-#     vmin, vmax = minimum(outputs[:, :, ind]), maximum(outputs[:, :, ind])
-
-#     im1 = ax[1,i].pcolormesh(X, Y, inputs[:, :, ind],    shading="gouraud",vmin = clims[1,1],vmax = clims[1,2])
-#     im2 = ax[2,i].pcolormesh(X, Y, outputs[:, :, ind],   shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
-#     im3 = ax[3,i].pcolormesh(X, Y, outputs[:, :, ind+3], shading="gouraud", vmin=minimum([clims[2,1],clims[3,1]]), vmax =maximum([clims[2,2],clims[3,2]]))
-
-#     ax[1,i].set_title(nns[i],pad = 5)
-#     # ax[3,i].set_xlabel(L"x",labelpad=10)
-
-#     for j = 1:3
-#         ax[j,i].spines["top"].set_visible(false)
-#         ax[j,i].spines["right"].set_visible(false)
-#         ax[j,i].spines["left"].set_visible(false)
-#         ax[j,i].spines["bottom"].set_visible(false)
-#         ax[j,i].set_aspect("equal", "box")
-#         ax[j,i].set_yticks([])
-#         ax[j,i].set_xticks([])
-#     end
-    
-#     if i == 4
-#         cax = fig.add_axes([0.92, 0.628, 0.015, 0.27],frameon=false)
-#         cb = plt.colorbar(im1,cax=cax, ticks=[19.6,19.8, 20, 20.2],drawedges=false)
-#         cb.outline.set_visible(false)
-#         cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-
-#         cax2 = fig.add_axes([0.92,0.025, 0.015, 0.575])
-#         cb2 = plt.colorbar(im2,cax=cax2,ticks=[-0.08,-0.04,0,0.04,0.08])
-#         cb2.outline.set_visible(false)
-#         cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
-#     end
-# end
-
-# ax[1,1].set_ylabel(L"\nabla\times f",labelpad=5)
-# ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5)
-# ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5)
-# plt.subplots_adjust(left = 0.05, right = 0.9, bottom = 0.025,top=.9,hspace=0.1,wspace=0.1)
-# plt.savefig("Helmholtz-worst.pdf",dpi=72)
-# plt.savefig("Helmholtz-worst.png",dpi=60)

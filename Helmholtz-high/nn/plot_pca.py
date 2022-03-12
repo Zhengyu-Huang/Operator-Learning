@@ -26,11 +26,11 @@ plt.rc("ytick",color="#808080")
 M = 20000
 N = 101
 
-recomputePCA = True
+recomputePCA = False
 if recomputePCA:
     ntrain = M//2
     N_theta = 100
-    prefix = "/Users/elizqian/Box/HelmholtzData/data/"
+    prefix = "../../data/"
     # theta = np.load(prefix+"Random_NS_theta_" + str(N_theta) + ".npy")   
     outputs = np.load(prefix+"Random_Helmholtz_high_K_" + str(N_theta) + ".npy")
     # inputs = np.load(prefix+"Random_Helmholtz_high_cs_" + str(N_theta) + ".npy")
@@ -60,9 +60,10 @@ for row,subfig in enumerate(subfigs):
     axs.append(subfig.subplots(1,4))
 ims = []
 for i in range(4):
-    ims.append(axs[0][i].pcolormesh(X,Y,np.reshape(Ug[:, i], (N,N)),shading="gouraud",cmap="gray",vmin=-0.02,vmax=0.02))
-    ims.append(axs[1][i].pcolormesh(X, Y, DeepONetPCA_data[:,:,2*i], shading="gouraud",cmap="gray",vmin=0,vmax=0.14))
-    ims.append(axs[2][i].pcolormesh(X,Y,DeepONetPCA_data[:,:,2*i+1],shading="gouraud",cmap="gray",vmin=-0.03,vmax=0.03))
+    ims.append(axs[0][i].pcolormesh(X,Y,np.reshape(Ug[:, i], (N,N)),shading="gouraud",cmap="gray",vmin=-0.042,vmax=0.042))
+    ims.append(axs[1][i].pcolormesh(X, Y, DeepONetPCA_data[:,:,2*i], shading="gouraud",cmap="gray",vmin=0,vmax=0.1))
+    ims.append(axs[2][i].pcolormesh(X,Y,DeepONetPCA_data[:,:,2*i+1],shading="gouraud",cmap="gray",vmin=-0.04,vmax=0.04))
+    print(np.min(DeepONetPCA_data[:,:,2*i+1]),np.max(DeepONetPCA_data[:,:,2*i+1]))
 
     for j in range(3):
         axs[j][i].set_aspect("equal","box")
@@ -77,9 +78,16 @@ cax = []
 for i in range(3):
     temp = axs[i][3].get_position()
     cax.append(subfigs[i].add_axes([0.9,temp.y0,0.02,temp.y1-temp.y0]))
-    cb = plt.colorbar(ims[i],cax=cax[i])
+    if i==0:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[-0.04,0,0.04])
+    elif i == 1:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[0,0.05,0.1])
+    else:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[-0.04,0,0.04])
     cb.outline.set_visible(False)
     cb.ax.yaxis.set_tick_params(width=0.3)
+    for t in cb.ax.get_yticklabels():
+        t.set_fontsize(12)
 
 fig.savefig("Helmholtz-pca-vis.pdf")
 plt.close("all")

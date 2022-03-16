@@ -180,7 +180,7 @@ for i = 1:4 # test problems
         ax[i,j].loglog(FNO_Data[(j+3)*5+1:(j+3)*5+5, 3, i], FNO_Data[(j+3)*5+1:(j+3)*5+5, 5, i], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none",      label =  nns[4]  )
         
         
-
+        @info probs[i] , j, "-th column: ", " solpe : ",    [log.(FNO_Data[(j+3)*5+1:(j+3)*5+5, 3, i])   ones(5)] \ log.(FNO_Data[(j+3)*5+1:(j+3)*5+5, 5, i])
         
         # set titles on top row
         if i == 1

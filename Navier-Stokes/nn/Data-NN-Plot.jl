@@ -165,53 +165,53 @@ PARA_Data =
 ]
 
 FNO_Data =
- [ 156    2         NaN        0.11521164270547721   0.12339600022786702;
-  156    4         NaN         0.04327309332214869   0.06048789185782274;
-  156    8         NaN         0.016168724602231614   0.032072231555596374;
-  156    16        NaN         0.005249500053767593   0.023700009744900923;
-  156    32        NaN         0.0014658996675653048   0.022899862354955614;
-  #  
-  312    2          NaN        0.08447800151621684   0.0964155392960096;
-  312    4          NaN        0.029398753027168986   0.04714755162310142;
-  312    8         NaN         0.012217864979249544   0.022649662748265725;
-  312    16         NaN        0.005431252079478537   0.01406571715294073;
-  312    32         NaN        0.0017822225416192594   0.012217269443238202;
-  #  
-  625    2           NaN       0.07806984456181526   0.0705215987443924;
-  625    4           NaN       0.02227312042117119   0.03201523081958294;   
-  625    8         NaN         0.01030871114730835   0.016649957977235317;   
-  625    16          NaN       0.00446023159623146   0.008699347781389952;
-  625    32         NaN        0.0022813551280647516   0.005884916285052896;  
-  #  
-  1250    2    NaN 0.06780118720531464   0.06278538788259029;
-  1250     4   NaN 0.017018680108338593   0.024876480447500945;
-  1250     8  NaN  0.0079419405143708     0.012542640312761068;
-  1250    16  NaN  0.0035085849748924375   0.00562010498624295;
-  1250    32   NaN  0.0017741449317894877   0.003267710011359304;  
-  #  
-  2500    2   NaN  0.057117848440259696   0.057897662657499314;
-  2500     4   NaN 0.014145546003431082   0.021100723274052144;
-  2500     8  NaN  0.005937939846143127   0.010031615598127246;
-  2500    16  NaN  0.002793993064202368   0.004056595138087869;
-  2500    32   NaN 0.0014087061800761148   0.0022156884246040134;  
-  #  
-  5000    2    NaN     0.053494763150066134   0.0529024346254766;
-  5000    4   NaN      0.012669489195756615   0.017591067614220083;
-  5000     8  NaN      0.00488006997150369   0.008129337667301298;
-  5000    16  NaN      0.002081191560672596   0.002879628290119581;
-  5000    32  NaN      0.001144796449947171   0.0015851109898416325;  
-  #  
-  10000    2  NaN      0.046579971103183924   0.04458688607420772;
-  10000    4  NaN      0.01040249362718314    0.01529550627656281;
-  10000    8 NaN       0.003864795654895715   0.006228204161534086;
-  10000    16 NaN      0.0015681422499590554   0.0022393917117733506;
-  10000    32 NaN      0.0008914144008886069   0.0012182812025421299;
-  #  
-  20000    2   NaN    0.04892155617615208   0.0391818240063265;
-  20000    4   NaN    0.008901817452069373   0.013341024344973267;
-  20000    8   NaN    0.003021176399633987   0.005439075825724285;
-  20000    16  NaN    0.001268567710276693   0.001994823907973478;
-  20000    32  NaN    0.0008335973911860492   0.0009495193176931935
+[ 156    2         NaN        0.11521164270547721   0.12339600022786702;
+156    4         NaN         0.04327309332214869   0.06048789185782274;
+156    8         NaN         0.016168724602231614   0.032072231555596374;
+156    16        NaN         0.005249500053767593   0.023700009744900923;
+156    32        NaN         0.0014658996675653048   0.022899862354955614;
+#  
+312    2          NaN        0.08447800151621684   0.0964155392960096;
+312    4          NaN        0.029398753027168986   0.04714755162310142;
+312    8         NaN         0.012217864979249544   0.022649662748265725;
+312    16         NaN        0.005431252079478537   0.01406571715294073;
+312    32         NaN        0.0017822225416192594   0.012217269443238202;
+#  
+625    2           NaN       0.07806984456181526   0.0705215987443924;
+625    4           NaN       0.02227312042117119   0.03201523081958294;   
+625    8         NaN         0.01030871114730835   0.016649957977235317;   
+625    16          NaN       0.00446023159623146   0.008699347781389952;
+625    32         NaN        0.0022813551280647516   0.005884916285052896;  
+#  
+1250    2    NaN 0.06780118720531464   0.06278538788259029;
+1250     4   NaN 0.017018680108338593   0.024876480447500945;
+1250     8  NaN  0.0079419405143708     0.012542640312761068;
+1250    16  NaN  0.0035085849748924375   0.00562010498624295;
+1250    32   NaN  0.0017741449317894877   0.003267710011359304;  
+#  
+2500    2   NaN  0.057117848440259696   0.057897662657499314;
+2500     4   NaN 0.014145546003431082   0.021100723274052144;
+2500     8  NaN  0.005937939846143127   0.010031615598127246;
+2500    16  NaN  0.002793993064202368   0.004056595138087869;
+2500    32   NaN 0.0014087061800761148   0.0022156884246040134;  
+#  
+5000    2    NaN     0.053494763150066134   0.0529024346254766;
+5000    4   NaN      0.012669489195756615   0.017591067614220083;
+5000     8  NaN      0.00488006997150369   0.008129337667301298;
+5000    16  NaN      0.002081191560672596   0.002879628290119581;
+5000    32  NaN      0.001144796449947171   0.0015851109898416325;  
+#  
+10000    2  NaN      0.046579971103183924   0.04458688607420772;
+10000    4  NaN      0.01040249362718314    0.01529550627656281;
+10000    8 NaN       0.003864795654895715   0.006228204161534086;
+10000    16 NaN      0.0015681422499590554   0.0022393917117733506;
+10000    32 NaN      0.0008914144008886069   0.0012182812025421299;
+#  
+20000    2   NaN    0.04892155617615208   0.0391818240063265;
+20000    4   NaN    0.008901817452069373   0.013341024344973267;
+20000    8   NaN    0.003021176399633987   0.005439075825724285;
+20000    16  NaN    0.001268567710276693   0.001994823907973478;
+20000    32  NaN    0.0008335973911860492   0.0009495193176931935
 ]
 ######################################################
 
@@ -225,17 +225,17 @@ FNO_Data =
 
 fig, ax = PyPlot.subplots(ncols = 4, sharex=false, sharey=true, figsize=nn_linefigsize)
 for i = 1:4
-    ax[1].plot(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(PCA_Data[(i+3)*5+1, 1])))
-    ax[2].plot(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[i], fillstyle="none", label =  "N = "*string(Int(DeepONet_Data[(i+3)*5+1, 1])))
+    ax[1].loglog(PCA_Data[(i+3)*5+1:(i+3)*5+5, 2], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(PCA_Data[(i+3)*5+1, 1])))
+    ax[2].loglog(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 2], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[i], fillstyle="none", label =  "N = "*string(Int(DeepONet_Data[(i+3)*5+1, 1])))
     if i < 4
-        ax[3].plot(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[i], fillstyle="none",     label =  "N = "*string(Int(PARA_Data[(i+3)*5+1, 1]))  )
+        ax[3].loglog(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[i], fillstyle="none",     label =  "N = "*string(Int(PARA_Data[(i+3)*5+1, 1]))  )
     end
-    ax[4].plot(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(FNO_Data[(i+3)*5+1, 1]))  )
+    ax[4].loglog(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[i], fillstyle="none",      label =  "N = "*string(Int(FNO_Data[(i+3)*5+1, 1]))  )
 end
 
 
 for i = 1:4
-    ax[i].title.set_text(nns[i])   
+    ax[i].set_title(nns[i],pad=13)   
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
@@ -243,9 +243,14 @@ for i = 1:4
     ax[i].spines["bottom"].set_color("#808080")
     ax[i].spines["bottom"].set_linewidth(0.3)
     ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
+        
     ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](which="minor",left=false)
+    ax[i][:yaxis][:set_minor_formatter](plt.NullFormatter())
+        
 end
-ax[4].legend(frameon=false,handlelength=3.4,fontsize=7)
+# ax[4].legend(frameon=false,handlelength=3.4,fontsize=7)
 ax[1].set_ylabel("Test error")
 
 i=1
@@ -259,9 +264,17 @@ ax[3].set_xticks(PARA_Data[(i+3)*5+1:(i+3)*5+5, 2])
 ax[3].set_xticklabels(["16","","128","256","512"])
 ax[3].set_xlabel("Network width "*L"w",labelpad=2)
 ax[4].set_xticks(FNO_Data[(i+3)*5+1:(i+3)*5+5, 2])
+ax[4].set_xticklabels(["2","4","8","16","32"])
+       
 ax[4].set_xlabel("Lifting dimension "*L"d_f",labelpad=2)
 
-plt.subplots_adjust(bottom=0.25,top=0.85,left=0.07,right=0.98)
+
+handles, labels = ax[1].get_legend_handles_labels()
+plt.subplots_adjust(bottom=0.25,top=0.8,left=0.1,right=0.98)
+
+fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9)
+
+# plt.subplots_adjust(bottom=0.25,top=0.85,left=0.07,right=0.98)
 plt.savefig("NS-Width-Error.pdf")
 plt.close()
 
@@ -289,7 +302,7 @@ ax[4].loglog(N_Data[1:7], PARA_Data[row_ids[i]:5:35, 5],     color = colors[3], 
 ax[4].loglog(N_Data, FNO_Data[row_ids[i]:5:40, 5],      color = colors[4], linestyle=(0,(1,1)), marker = markers[4], fillstyle="none",      label =  nns[4]  )
 
 for i = 1:4
-    ax[i].set_title(sizes[i],pad=11,fontsize=11)
+    ax[i].set_title(sizes[i],pad=13)
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["left"].set_color("#808080")
@@ -305,13 +318,22 @@ for i = 1:4
     ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
     ax[i][:yaxis][:set_tick_params](which="minor",left=false) # remove minor ytick labels?
     ax[i].set_xlabel(latexstring("Training data ",L"N"),labelpad=2)
+    ax[i][:yaxis][:set_minor_formatter](plt.NullFormatter())
+    
 end
 ax[1].set_yticklabels(plot2_yticks)
 ax[1].set_ylabel("Test error")
 
-# fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.87),ncol=4,frameon=false)
-fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.92),ncol=4,frameon=false,fontsize=8)
-plt.subplots_adjust(bottom=0.2,top=0.8,left=0.08,right=0.98)
+
+handles, labels = ax[4].get_legend_handles_labels()
+plt.subplots_adjust(bottom=0.25,top=0.8,left=0.1,right=0.98)
+
+fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9)
+
+
+# # fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.87),ncol=4,frameon=false)
+# fig.legend(loc = "upper center",bbox_to_anchor=(0.5,0.92),ncol=4,frameon=false,fontsize=8)
+# plt.subplots_adjust(bottom=0.2,top=0.8,left=0.08,right=0.98)
 # plt.tight_layout()
 plt.savefig("NS-Data-Error.pdf")
 plt.close()
@@ -335,20 +357,20 @@ for i = 1:size(PARA_Data)[1]
     PARA_Data[i, 3] = PARA_Net_Cost(n_in, 2, PARA_Data[i, 2],layers, Np)
 end
 for i = 1:size(FNO_Data)[1]
-    FNO_Data[i, 3] = FNO_Net_Cost(FNO_Data[i, 2], kmax, layers, Np)
+    FNO_Data[i, 3] = FNO_Net_Cost(FNO_Data[i, 2], kmax, 3, Np)
 end
 
 fig, ax = PyPlot.subplots(ncols = 4, sharex=true, sharey=true, figsize=nn_linefigsize)
 for i = 1:4
-    ax[i].semilogx(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[i], marker = markers[1], fillstyle="none",      label =  nns[1]  )
-    ax[i].semilogx(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[i], marker = markers[2], fillstyle="none", label =  nns[2]  )
+    ax[i].loglog(PCA_Data[(i+3)*5+1:(i+3)*5+5, 3], PCA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[1], linestyle=linestyle[1], marker = markers[1], fillstyle="none",      label =  nns[1]  )
+    ax[i].loglog(DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 3], DeepONet_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[2], linestyle=linestyle[1], marker = markers[2], fillstyle="none", label =  nns[2]  )
     
     if i < 4
-        ax[i].semilogx(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[i], marker = markers[3], fillstyle="none",     label =  nns[3]  )
+        ax[i].loglog(PARA_Data[(i+3)*5+1:(i+3)*5+5, 3], PARA_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[3], linestyle=linestyle[1], marker = markers[3], fillstyle="none",     label =  nns[3]  )
     end
     
-    ax[i].semilogx(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[i], marker = markers[4], fillstyle="none",      label =  nns[4]  )
-    ax[i].title.set_text(L"N = "*string(Int(FNO_Data[(i+3)*5+1, 1])))   
+    ax[i].loglog(FNO_Data[(i+3)*5+1:(i+3)*5+5, 3], FNO_Data[(i+3)*5+1:(i+3)*5+5, 5], color = colors[4], linestyle=linestyle[1], marker = markers[4], fillstyle="none",      label =  nns[4]  )
+    ax[i].set_title(L"N = "*string(Int(FNO_Data[(i+3)*5+1, 1])), pad=13)   
 end
 for i = 1:4
     ax[i].spines["top"].set_visible(false)
@@ -357,17 +379,27 @@ for i = 1:4
     ax[i].spines["left"].set_linewidth(0.3)
     ax[i].spines["bottom"].set_color("#808080")
     ax[i].spines["bottom"].set_linewidth(0.3)
+    
     ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
     ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:yaxis][:set_tick_params](which="minor",left=false) # remove minor ytick labels?
+    ax[i][:yaxis][:set_minor_formatter](plt.NullFormatter())
+
+
     ax[i].set_xticks([1e6, 1e8,1e10])
     ax[i].set_xticklabels([L"10^6",L"10^8",L"10^{10}"])
     ax[i].set_xlabel("Evaluation cost",labelpad=2)
 end
-ax[3].legend(frameon=false,handlelength=0)
+# ax[3].legend(frameon=false,handlelength=0)
 ax[1].set_ylabel("Test error")
 
+handles, labels = ax[1].get_legend_handles_labels()
+plt.subplots_adjust(bottom=0.25,top=0.8,left=0.1,right=0.98)
+fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9)
 
-plt.subplots_adjust(bottom=0.22,top=0.85,left=0.07,right=0.98)
+
+# plt.subplots_adjust(bottom=0.22,top=0.85,left=0.07,right=0.98)
 plt.savefig("NS-Cost-Error.pdf")
 
 

@@ -3,7 +3,7 @@ using Distributions
 using Random
 using SparseArrays
 using NPZ
-include("../src/Spectral-Navier-Stokes.jl");
+include("Spectral-Navier-Stokes.jl");
 
 
 #=

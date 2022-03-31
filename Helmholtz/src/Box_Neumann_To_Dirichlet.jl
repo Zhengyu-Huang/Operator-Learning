@@ -1,10 +1,10 @@
 # using Helmholtz
-include("../src/Util.jl")
-include("../src/ShapeFunctions.jl")
-include("../src/Element.jl")
-include("../src/Domain.jl")
-include("../src/Solver.jl")
-include("../src/Mesh.jl")
+include("Util.jl")
+include("ShapeFunctions.jl")
+include("Element.jl")
+include("Domain.jl")
+include("Solver.jl")
+include("Mesh.jl")
 
 bump_func = (x,y, x0, d0) -> Float64.( abs.(x .- x0) .<= d0/2.0 )
 function hat_func(x, y, x0, Δx)

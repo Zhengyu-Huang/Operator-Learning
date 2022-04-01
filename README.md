@@ -11,30 +11,35 @@ We consider four neural operators `PCA-Net`,  `DeepONet`, `PARA-Net` and `FNO` i
 
 
 ## Navier-Stokes equation (`Navier-Stokes`)
-We consider the map between the forcing $f'$ to vorticity field $\omega(T)$ at a later time 
-<img src="Figs/NS-medians-log.pdf" width="800" />
+We consider the map between the forcing to the vorticity field at a later time 
+
+<img src="Figs/NS-medians-log.jpg" width="400" />
 
 
 ## Helmholtz equation (`Helmholtz`)
-We consider the map between the wavespeed field  $c$ to the excitation field $u$ at a later time 
-<img src="Figs/Helmholtz-medians-log.pdf" width="800" />
+We consider the map between the wavespeed field to the excitation field at a later time 
+
+<img src="Figs/Helmholtz-medians-log.jpg" width="400" />
 
 ## Structural equation (`Solid`)
-We consider the map between the load $\bar{t}$ to the von Mises stress field  $\tau_{vM}$
-<img src="Figs/Solid-medians-log.pdf" width="800" />
+We consider the map between the load to the von Mises stress field:
+
+<img src="Figs/Solid-medians-log.jpg" width="400" />
 
 ## Advection equation (`Advection`)
-We consider the initial condition  $u{0}$ to the solution  $u_{T}$ at a later time
-<img src="Figs/Advection-dc-low-medians.pdf" width="800" />
+We consider the map between the initial condition to the solution at a later time
 
+<img src="Figs/Advection-dc-low-medians.jpg" width="400" />
 
-
+## Results
 Test error vs. training data volume for each of our test problems across different network sizes and architectures, and  the Monte Carlo rate O(N^{-\frac{1}{2}})  for reference are
-<img src="Figs/All-Error-Data.pdf" width="800" />
+
+<img src="Figs/All-Error-Data.jpg" width="600" />
 
 
 The  error behavior of our neural network predictions as a function of their online evaluation cost (FLOPs) is 
-<img src="Figs/All-Error-Cost.pdf" width="800" />
+
+<img src="Figs/All-Error-Cost.jpg" width="600" />
 
 
 

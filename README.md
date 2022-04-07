@@ -9,6 +9,16 @@ develops; it forms the focus of this work.
 
 We consider four neural operators `PCA-Net`,  `DeepONet`, `PARA-Net` and `FNO` in different parameter/data regimes  cross a range of problems arising from PDE models in continuum mechanics.
 
+## Data
+
+The data sets are https://data.caltech.edu/records/20091, which contain 8 `*.npy` files:
+1. Navier stokes equation : NavierStokes_inputs.npy & NavierStokes_outputs.npy. 
+2. Helmholtz equation : Helmholtz_inputs.npy & Helmholtz_outputs.npy. 
+3. Structural mechanics equation : StructuralMechanics_inputs.npy & StructuralMechanics_outputs.npy. 
+4. Advection equation : Advection_inputs.npy & Advection_outputs.npy. 
+
+The data are stored as nx by ny by ndata arrays (2d problems) or nx by ndata arrays (1d problems).
+
 
 ## Navier-Stokes equation (`Navier-Stokes`)
 We consider the map between the forcing to the vorticity field at a later time 
@@ -52,9 +62,10 @@ More details are in the paper:  Maarten V. de Hoop, Daniel Zhengyu Huang, Elizab
 
 Each application has one folder, which includes the PDE solver and different NN training folders including `PCA`,  `DeepONet`, `PARA` and `FNO`.
 
-    Data : Different PDE solvers used to generate data are  in `src` folder,  `NN-Data-Par.jl` will generate data; Data are stored on Caltech data center (www).
+    Data : Different PDE solvers used to generate data are  in `src` folder,  `NN-Data-Par.jl` will generate data; 
     
-    Neural network: Implementation of different neural network architectures are in `nn/mynn.py`,  the training/test script are in different folders with `learnXXX.py` and `evalXXX.py`.
+    Neural network: Implementation of different neural network architectures are in `nn/mynn.py`,  
+    the training/test script are in different folders with `learnXXX.py` and `evalXXX.py`.
     
     Results: `Map-Plot.jl` draws worst and median cases, and test errors are in `Data-NN-Plot.jl`
     

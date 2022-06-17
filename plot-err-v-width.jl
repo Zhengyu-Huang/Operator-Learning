@@ -69,7 +69,8 @@ for i = 1:4
             ax[i, j].set_xticks(FNO_Data[(j+3)*5+1:(j+3)*5+5, 2, 1])
             ax[i, j].set_xticklabels(["2","4","8","16","32"])
         else
-            ax[i, j].set_xticks(N_Width,labels=["16",L"64\,","128","","512"])
+            ax[i, j].set_xticks(N_Width)
+	    ax[i, j].set_xticklabels=(["16",L"64\,","128","","512"])
         end
 
     end

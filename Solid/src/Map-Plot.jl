@@ -72,7 +72,7 @@ px,py = quad_itp(xgrid,inputs[:,1000])
 fig, ax = PyPlot.subplots(1,2,sharex = true,figsize=(4.5,2))
 ax[1].plot(xgrid, inputs[:,1000], "o",color="#808080",markersize=1, fillstyle="none")
 ax[1].plot(px,py,color="#808080")
-im = visσ(domain, ngp,0,350, σ=outputs[:, 1000], ax = ax[2], mycolorbar="viridis")
+im = visσ(domain, ngp,0,350, σ=outputs[:, 1000], ax = ax[2], mycolormap="viridis", mycolorbar=false)
 
 for i = 1:2
     ax[i].spines["top"].set_visible(false)
@@ -159,12 +159,12 @@ for i = 1:4
     err = broadcast(abs,(outputs[:, ind + 3]-outputs[:,ind]))
     
 
-    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i], mycolorbar="viridis")
-    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i], mycolorbar="viridis")
+    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i], mycolormap="viridis", mycolorbar=false)
+    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i], mycolormap="viridis", mycolorbar=false)
     if log_err
-        im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolorbar="magma" )
+        im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolormap="magma", mycolorbar=false )
     else
-        im4 = visσ(domain, ngp, emin, emax; σ=err, ax = ax2[4,i], mycolorbar="magma" )
+        im4 = visσ(domain, ngp, emin, emax; σ=err, ax = ax2[4,i], mycolormap="magma", mycolorbar=false )
     end
 
     for j = 2:4

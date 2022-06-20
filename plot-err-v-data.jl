@@ -83,7 +83,7 @@ plt.subplots_adjust(bottom=0.07,top=0.9,left=0.13,right=0.98,hspace=0.2)
 
 fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9,labelcolor="linecolor")
 fig.text(0.01, 0.5, "Test Error", ha="left", va="center", rotation="vertical",fontsize=14,color=lbl)
-plt.savefig("All-Error-Data.pdf")
+plt.savefig("All-Error-Data-"*coloroption*".pdf")
 plt.close("all")
 
 ##### just the biggest network for slides
@@ -150,5 +150,5 @@ plt.subplots_adjust(bottom=0.15,top=0.8,left=0.09,right=0.99,wspace=0.3)
 
 fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.92),ncol=4,frameon=false,fontsize=9,labelcolor="linecolor")
 # fig.text(0.01, 0.5, "Test Error", ha="left", va="center", rotation="vertical",fontsize=14,color=lbl)
-plt.savefig("All-Error-Data-"*coloroption*".pdf")
+plt.savefig("slides-Error-Data-"*coloroption*".pdf")
 plt.close("all")

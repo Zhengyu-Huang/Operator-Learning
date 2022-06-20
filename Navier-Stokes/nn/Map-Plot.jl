@@ -2,7 +2,7 @@ using NPZ
 using LinearAlgebra
 using PyPlot
 
-# script to plot advection input-output map and median/maximum error cases
+# script to plot Navier-Stokes input-output map and median/maximum error cases
 # can choose color option for paper plots or for darkslides, or make your own color option in plotdefaults.jl
 
 include("Data-NN-Plot.jl") # load data
@@ -158,9 +158,9 @@ if log_err
     end
 else
     if ind==2
-        plt.savefig("NS-medians.pdf")
+        plt.savefig("NS-medians-"*coloroption*".pdf")
     elseif ind==3
-        plt.savefig("NS-worst.pdf")
+        plt.savefig("NS-worst-"*coloroption*".pdf")
     end
 end
 end

@@ -23,6 +23,12 @@ nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
 probs = ["Navier-Stokes", "Helmholtz", "Structural mechanics", "Advection"]
 
 if coloroption == "paper"
+    font0 = Dict(
+    "figure.facecolor" => "#FFFFFF",
+    "axes.facecolor" => "#FFFFFF",
+    "savefig.facecolor" =>"#FFFFFF",
+    )
+    merge!(rcParams, font0)
     colors = ["#3A637B", "#C4A46B", "#FF6917", "#D44141" ] # colorblind friendly pallet https://davidmathlogic.com/colorblind/#%233A637B-%23C4A46B-%23FF6917-%23D44141
     lbl = "#000000"
     tk = "#808080"

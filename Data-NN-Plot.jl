@@ -1,7 +1,6 @@
 using LinearAlgebra
 using PyPlot
-include("nn/mynn.jl")
-include("plotdefaults.jl")
+# include("nn/mynn.jl")
 
 PCA_Data_Helmholtz = 
 [ 156    16         NaN    0.032267743729887055    0.5007982942898209;

@@ -8,7 +8,7 @@ using PyPlot
 include("Data-NN-Plot.jl") # load data
 
 coloroption = "paper"
-coloroption = "darkslides"
+# coloroption = "darkslides"
 
 include("../../plotdefaults.jl")
 
@@ -54,7 +54,7 @@ ax[1].set_ylabel(L"y",color=lbl)
 ax[1].set_title(L"c",color=lbl)
 ax[2].set_title(L"u",color=lbl)
 fig.subplots_adjust(left=0.13,right=0.92,bottom=0.07,top=0.98,wspace=0.3)
-fig.savefig("Helmholtz-map-dark.pdf")
+fig.savefig("Helmholtz-map-"*coloroption*".pdf")
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
     mysize = 12

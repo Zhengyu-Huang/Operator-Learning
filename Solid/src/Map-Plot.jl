@@ -1,6 +1,15 @@
 using NPZ
 using LinearAlgebra
 using PyPlot
+
+# script to plot Solid input-output map and median/maximum error cases
+# can choose color option for paper plots or for darkslides, or make your own color option in plotdefaults.jl
+
+# include("../nn/Data-NN-Plot.jl") # load data
+
+coloroption = "paper"
+coloroption = "darkslides"
+
 include("../../plotdefaults.jl")
 
 using Random, Distributions
@@ -70,37 +79,37 @@ ngp = Int64(sqrt(length(domain.elements[1].weights)))
 px,py = quad_itp(xgrid,inputs[:,1000])
 
 fig, ax = PyPlot.subplots(1,2,sharex = true,figsize=(4.5,2))
-ax[1].plot(xgrid, inputs[:,1000], "o",color="#808080",markersize=1, fillstyle="none")
-ax[1].plot(px,py,color="#808080")
-im = visσ(domain, ngp,0,350, σ=outputs[:, 1000], ax = ax[2], mycolormap="viridis", mycolorbar=false)
+ax[1].plot(xgrid, inputs[:,1000], "o",color=tk,markersize=1, fillstyle="none")
+ax[1].plot(px,py,color=tk)
+im = visσ(domain, ngp,0,350, σ=outputs[:, 1000], ax = ax[2], mycolorbar="viridis")
 
 for i = 1:2
     ax[i].spines["top"].set_visible(false)
     ax[i].spines["right"].set_visible(false)
-    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
-    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax[i][:xaxis][:set_tick_params](colors=tk,width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors=tk,width=0.3)
 end
-ax[1].spines["left"].set_color("#808080")
+ax[1].spines["left"].set_color(tk)
 ax[1].spines["left"].set_linewidth(0.3)
-ax[1].spines["bottom"].set_color("#808080")
+ax[1].spines["bottom"].set_color(tk)
 ax[1].spines["bottom"].set_linewidth(0.3)
 ax[1].set_aspect(1. /900)
-ax[1].set_title("Top loading "*L"\bar{t}")
+ax[1].set_title("Top loading "*L"\bar{t}",color=lbl)
 ax[1].set_ylim([-220,500])
-ax[1].set_xlabel(L"x")
+ax[1].set_xlabel(L"x",color=lbl)
 
 ax[2].spines["bottom"].set_visible(false)
 ax[2].spines["left"].set_visible(false)
-ax[2].set_title("Stress field")
-ax[2].set_xlabel(L"x")
-ax[2].set_ylabel(L"y")
+ax[2].set_title("Stress field",color=lbl)
+ax[2].set_xlabel(L"x",color=lbl)
+ax[2].set_ylabel(L"y",color=lbl)
 ax[2].set_aspect("equal","box")
 cb = plt.colorbar(im,shrink=0.7,aspect = 15,pad = 0.01)
 cb.outline.set_visible(false)
-cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
 fig.subplots_adjust(left = 0.08, right = 0.97, bottom = 0.025,top=0.99,wspace=0.3)
-fig.savefig("Solid-map.pdf")
+fig.savefig("Solid-map-"*coloroption*".pdf")
 
 ####################################################
 # Plot median/worst case error examples
@@ -130,17 +139,17 @@ for i = 1:4
     xx = LinRange(0, L, N_x)
     px,py = quad_itp(xx,inputs[:,ind])
 
-    ax2[1,i].plot(xx, inputs[:, ind], "o",color="#808080",markersize=1, fillstyle="none")
-    ax2[1,i].plot(px,py,color="#808080")
-    ax2[1,i].set_title(nns[i],pad = 5,fontsize=14)
-    ax2[1,i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+    ax2[1,i].plot(xx, inputs[:, ind], "o",color=tk,markersize=1, fillstyle="none")
+    ax2[1,i].plot(px,py,color=tk)
+    ax2[1,i].set_title(nns[i],pad = 5,fontsize=14,color=lbl)
+    ax2[1,i][:yaxis][:set_tick_params](colors=tk,width=0.3)
     ax2[1,i].set_xticks([])
     ax2[1,i].set_ylim([-300,400])
     ax2[1,i].spines["top"].set_visible(false)
     ax2[1,i].spines["right"].set_visible(false)
-    ax2[1,i].spines["left"].set_color("#808080")
+    ax2[1,i].spines["left"].set_color(tk)
     ax2[1,i].spines["left"].set_linewidth(0.3)
-    ax2[1,i].spines["bottom"].set_color("#808080")
+    ax2[1,i].spines["bottom"].set_color(tk)
     ax2[1,i].spines["bottom"].set_linewidth(0.3)
     if i > 1
         ax2[1,i].set_yticklabels([])
@@ -159,12 +168,12 @@ for i = 1:4
     err = broadcast(abs,(outputs[:, ind + 3]-outputs[:,ind]))
     
 
-    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i], mycolormap="viridis", mycolorbar=false)
-    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i], mycolormap="viridis", mycolorbar=false)
+    visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind],     ax = ax2[2,i], mycolorbar="viridis")
+    im3 = visσ(domain, ngp, vmin, vmax; σ=outputs[:, ind + 3], ax = ax2[3,i], mycolorbar="viridis")
     if log_err
-        im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolormap="magma", mycolorbar=false )
+        im4 = visσ(domain, ngp, -3,2; σ=broadcast(log10,err), ax = ax2[4,i], mycolorbar="magma" )
     else
-        im4 = visσ(domain, ngp, emin, emax; σ=err, ax = ax2[4,i], mycolormap="magma", mycolorbar=false )
+        im4 = visσ(domain, ngp, emin, emax; σ=err, ax = ax2[4,i], mycolorbar="magma" )
     end
 
     for j = 2:4
@@ -181,7 +190,7 @@ for i = 1:4
         cax2 = fig2.add_axes([0.92,0.2693, 0.015, 0.46638])
         cb2 = plt.colorbar(im3,cax=cax2,ticks=[0,50,100,150,200,250,300,350])
         cb2.outline.set_visible(false)
-        cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+        cb2.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
         cax = fig2.add_axes([0.92,0.025, 0.015, 0.222])
         if log_err 
@@ -191,27 +200,27 @@ for i = 1:4
             cb = plt.colorbar(im4,cax=cax,ticks=[0, 30,60, 90])
         end
         cb.outline.set_visible(false)
-        cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+        cb.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
     end
 end
-ax2[1,1].set_ylabel("Top loading "*L"\bar{t}(x)",labelpad=1,fontsize=10)
-ax2[2,1].set_ylabel("True\n stress field",labelpad=16,fontsize=10)
-ax2[3,1].set_ylabel("Predicted\n stress field",labelpad=16,fontsize=10)
-ax2[4,1].set_ylabel("Stress field\n error",labelpad=16,fontsize=10)
+ax2[1,1].set_ylabel("Top loading "*L"\bar{t}(x)",labelpad=1,fontsize=10,color=lbl)
+ax2[2,1].set_ylabel("True\n stress field",labelpad=16,fontsize=10,color=lbl)
+ax2[3,1].set_ylabel("Predicted\n stress field",labelpad=16,fontsize=10,color=lbl)
+ax2[4,1].set_ylabel("Stress field\n error",labelpad=16,fontsize=10,color=lbl)
 fig2.subplots_adjust(left = 0.09, right = 0.9, bottom = 0.025,top=0.98,hspace=0.1,wspace=0.1)
 
 if log_err
     if ind==2
-        fig2.savefig("Solid-medians-log.pdf")
+        fig2.savefig("Solid-medians-log-"*coloroption*".jpg",dpi=300)
     elseif ind==3
-        fig2.savefig("Solid-worst-log.pdf")
+        fig2.savefig("Solid-worst-log-"*coloroption*".jpg",dpi=300)
     end
 else
     if ind==2
-        fig2.savefig("Solid-medians.pdf")
+        fig2.savefig("Solid-medians-"*coloroption*".pdf")
     elseif ind==3
-        fig2.savefig("Solid-worst.pdf")
+        fig2.savefig("Solid-worst-"*coloroption*".pdf")
     end
 end
 end

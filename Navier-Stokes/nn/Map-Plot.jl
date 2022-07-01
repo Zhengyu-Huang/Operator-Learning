@@ -1,66 +1,19 @@
 using NPZ
 using LinearAlgebra
 using PyPlot
+
+# script to plot Navier-Stokes input-output map and median/maximum error cases
+# can choose color option for paper plots or for darkslides, or make your own color option in plotdefaults.jl
+
+include("Data-NN-Plot.jl") # load data
+
+coloroption = "paper"
+coloroption = "darkslides"
+
 include("../../plotdefaults.jl")
-rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
-    mysize = 12
-    font0 = Dict(
-    "xtick.labelsize" => mysize,
-    "ytick.labelsize" => mysize,
-    "legend.fontsize" => mysize,
-    )
-merge!(rcParams, font0)
 
 function meshgrid(xin, yin)
   return  xin' .* ones(length(yin)) , ones(length(xin))' .* yin
-end
-
-
-function input_plot(data, file_name)
-    
-    L = 1
-    N_x, _ = size(data)
-    xx = LinRange(0, L, N_x)
-    Y, X = meshgrid(xx, xx)
-    
-    fig = figure()
-    
-    pcolormesh(X, Y, data,  shading="gouraud")
-    colorbar()
-    fig.tight_layout()
-    fig.savefig(file_name)
-end
-
-
-function output_plot(data, file_name)
-    
-    L = 1
-    N_x, _ = size(data)
-    xx = LinRange(0, L, N_x)
-    Y, X = meshgrid(xx, xx)
-    
-    fig = figure()
-    
-    pcolormesh(X, Y, data,  shading="gouraud")
-    colorbar()
-    fig.tight_layout()
-    fig.savefig(file_name)
-end
-
-function map_plot(prefix = "../../data/", inds = [1,11])
-    inputs   = npzread(prefix * "Random_NS_curl_f_100.npy")   
-    outputs  = npzread(prefix * "Random_NS_omega_100.npy")
-    
-    ######################################################
-    N_x, N_data = size(outputs)
-
-    L = 1
-    xx = LinRange(0, L, N_x)
-
-    for ind in inds
-        input_plot(inputs[:, :,ind],   "NS-map-input-$(ind).pdf")
-        output_plot(outputs[:, :,ind], "NS-map-output-$(ind).pdf")
-    end
 end
 
 
@@ -81,11 +34,11 @@ fig,ax = PyPlot.subplots(1,2,sharex=true,sharey=true,figsize=(4.5,2))
 im1 = ax[1].pcolormesh(X, Y, inputs[:,:,sample_ind],  shading="gouraud")
 cb1 = plt.colorbar(im1,ax=ax[1],shrink=0.7,aspect=15)
 cb1.outline.set_visible(false)
-cb1.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb1.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 im2 = ax[2].pcolormesh(X, Y, outputs[:,:,sample_ind],  shading="gouraud")
 cb2 = plt.colorbar(im2,ax=ax[2],shrink=0.7,aspect=15)
 cb2.outline.set_visible(false)
-cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb2.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
 for i = 1:2
     ax[i].set_aspect("equal","box")
@@ -93,19 +46,19 @@ for i = 1:2
     ax[i].spines["right"].set_visible(false)
     ax[i].spines["bottom"].set_visible(false)
     ax[i].spines["top"].set_visible(false)
-    ax[i][:xaxis][:set_tick_params](colors="#808080",width=0.3)
-    ax[i][:yaxis][:set_tick_params](colors="#808080",width=0.3)
-    ax[i].set_xlabel(L"x")
+    ax[i][:xaxis][:set_tick_params](colors=tk,width=0.3)
+    ax[i][:yaxis][:set_tick_params](colors=tk,width=0.3)
+    ax[i].set_xlabel(L"x",color=lbl)
     ax[i].set_yticks([0,0.5,1])
     ax[i].set_yticklabels(["0",L"\pi",L"2\pi"])
     ax[i].set_xticks([0,0.5,1])
     ax[i].set_xticklabels(["0",L"\pi",L"2\pi"])
 end
-ax[1].set_ylabel(L"y")
-ax[1].set_title(L"f'")
-ax[2].set_title(L"\omega(T)")
-fig.subplots_adjust(left=0.1,right=0.92,bottom=0.05,top=0.975,wspace=0.3)
-fig.savefig("NS-map.pdf")
+ax[1].set_ylabel(L"y",color=lbl)
+ax[1].set_title(L"f'",color=lbl)
+ax[2].set_title(L"\omega(T)",color=lbl)
+fig.subplots_adjust(left=0.1,right=0.92,bottom=0.08,top=0.975,wspace=0.3)
+fig.savefig("NS-map-"*coloroption*".pdf")
 
 
 ####################################################
@@ -152,7 +105,7 @@ for i = 1:4
     else
         ims[4,i] = ax[4,i].pcolormesh(X,Y,err,shading="gouraud",cmap="magma",vmin=emin,vmax=emax)
     end
-    ax[1,i].set_title(nns[i],pad = 5,fontsize=16)
+    ax[1,i].set_title(nns[i],pad = 5,fontsize=16,color=lbl)
 
     for j = 1:4
         ax[j,i].spines["top"].set_visible(false)
@@ -165,10 +118,10 @@ for i = 1:4
     end
 end
 
-ax[1,1].set_ylabel(L"f'",labelpad=5,fontsize=14)
-ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5,fontsize=14)
-ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5,fontsize=14)
-ax[4,1].set_ylabel(L"\omega(T)"*" error",labelpad=5,fontsize=14)
+ax[1,1].set_ylabel(L"f'",labelpad=5,fontsize=14,color=lbl)
+ax[2,1].set_ylabel("True "*L"\omega(T)",labelpad=5,fontsize=14,color=lbl)
+ax[3,1].set_ylabel("Predicted "*L"\omega(T)",labelpad=5,fontsize=14,color=lbl)
+ax[4,1].set_ylabel(L"\omega(T)"*" error",labelpad=5,fontsize=14,color=lbl)
 plt.subplots_adjust(left = 0.05, right = 0.86, bottom = 0.025,top=.95,hspace=0.1,wspace=0.1)
 
 temp = ax[1,4].get_position()
@@ -176,7 +129,7 @@ xw = temp.x1-temp.x0
 cax = fig.add_axes([temp.x1+0.1*xw, temp.y0, 0.1*xw, temp.y1-temp.y0],frameon=false)
 cb = plt.colorbar(ims[1,4],cax=cax, ticks=[-0.02, 0, 0.02],drawedges=false)
 cb.outline.set_visible(false)
-cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
 temp = ax[2,4].get_position()
 temp2 = ax[3,4].get_position()
@@ -184,7 +137,7 @@ xw = temp.x1-temp.x0
 cax2 = fig.add_axes([temp.x1+0.1*xw,temp2.y0, 0.1*xw, temp.y1-temp2.y0])
 cb2 = plt.colorbar(ims[2,4],cax=cax2,ticks=[-0.2,-0.1,0,0.1,0.2])
 cb2.outline.set_visible(false)
-cb2.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb2.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
 temp = ax[4,4].get_position()
 cax3 = fig.add_axes([temp.x1+0.1*xw,temp.y0,0.1*xw, temp.y1-temp.y0])
@@ -195,19 +148,21 @@ else
     cb3 = plt.colorbar(im4,cax=cax3,ticks=[0, 0.025, 0.05])
 end
 cb3.outline.set_visible(false)
-cb3.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
+cb3.ax.yaxis.set_tick_params(colors=tk,width=0.3)
 
 if log_err
     if ind==2
-        plt.savefig("NS-medians-log.pdf")
+        plt.savefig("NS-medians-log-"*coloroption*".jpg",dpi=300)
     elseif ind==3
-        plt.savefig("NS-worst-log.pdf")
+        plt.savefig("NS-worst-log-"*coloroption*".jpg",dpi=300)
     end
 else
     if ind==2
-        plt.savefig("NS-medians.pdf")
+        plt.savefig("NS-medians-"*coloroption*".pdf")
     elseif ind==3
-        plt.savefig("NS-worst.pdf")
+        plt.savefig("NS-worst-"*coloroption*".pdf")
     end
 end
 end
+
+plt.close("all")

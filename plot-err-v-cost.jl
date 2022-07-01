@@ -1,4 +1,12 @@
+# script to plot err vs. cost for all training data volumes
+# can choose color option for paper plots or for darkslides, or make your own color option in plotdefaults.jl
 
+include("Data-NN-Plot.jl") # load data
+
+coloroption = "paper"
+# coloroption = "darkslides"
+
+include("plotdefaults.jl")
 
 
 ########### Error vs Cost
@@ -21,24 +29,24 @@ for i = 1:4 # test problems
         
         # set titles on top row
         if i == 1
-            ax[i,j].set_title(L"N = "*string(Int(N_Data[j])),pad=20)
+            ax[i,j].set_title(L"N = "*string(Int(N_Data[j])),pad=20,color=lbl)
         end
 
         # set xlabels on bottom row
         if i == 4
-            ax[i,j].set_xlabel("Evaluation cost",labelpad=2)
+            ax[i,j].set_xlabel("Evaluation cost",labelpad=2,color=lbl)
         end
 
         # # gray spines and ticks 
         ax[i,j].spines["top"].set_visible(false)
         ax[i,j].spines["right"].set_visible(false)
-        ax[i,j].spines["left"].set_color("#808080")
+        ax[i,j].spines["left"].set_color(tk)
         ax[i,j].spines["left"].set_linewidth(0.3)
-        ax[i,j].spines["bottom"].set_color("#808080")
+        ax[i,j].spines["bottom"].set_color(tk)
         ax[i,j].spines["bottom"].set_linewidth(0.3)
-        ax[i,j][:xaxis][:set_tick_params](colors="#808080",width=0.3)
+        ax[i,j][:xaxis][:set_tick_params](colors=tk,width=0.3)
         ax[i,j][:xaxis][:set_tick_params](which="minor",bottom=false) # remove minor tick labels
-        ax[i,j][:yaxis][:set_tick_params](colors="#808080",width=0.3)
+        ax[i,j][:yaxis][:set_tick_params](colors=tk,width=0.3)
         ax[i,j][:yaxis][:set_tick_params](which="minor",left=false)
     
                 
@@ -53,7 +61,7 @@ for i = 1:4 # test problems
         ax[i,j][:yaxis][:set_minor_formatter](plt.NullFormatter())
         # set labels on left column and remove tick labels elsewhere
         if j == 1
-            ax[i,j].set_ylabel(probs[i],labelpad = ypad[i])
+            ax[i,j].set_ylabel(probs[i],labelpad = ypad[i],color=lbl)
         end
     end
 end
@@ -61,7 +69,7 @@ end
 handles, labels = ax[1,1].get_legend_handles_labels()
 plt.subplots_adjust(bottom=0.07,top=0.9,left=0.13,right=0.98,hspace=0.2)
 
-fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9)
-fig.text(0.01, 0.5, "Test Error", ha="left", va="center", rotation="vertical",fontsize=14)
-plt.savefig("All-Error-Cost.pdf")
+fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.95),ncol=4,frameon=false,fontsize=9,labelcolor="linecolor")
+fig.text(0.01, 0.5, "Test Error", ha="left", va="center", rotation="vertical",fontsize=14,color=lbl)
+plt.savefig("All-Error-Cost-"*coloroption*".pdf")
 plt.close("all")

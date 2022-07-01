@@ -1,0 +1,2 @@
+Input dim :  21  output dim :  1521
+NN:  128 rel train error:  0.0641641532454597 rel test error  0.16563255786773382

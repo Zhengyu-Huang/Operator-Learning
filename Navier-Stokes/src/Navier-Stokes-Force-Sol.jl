@@ -47,7 +47,7 @@ function generate_ω0(L::Float64, N::Int64, θ::Array{Float64, 1},
         @assert(kx + ky > 0 || (kx + ky == 0 && kx > 0)) 
         
         ak, bk = abk[i, 1], abk[i, 2]
-        ω0 .+= 1/(sqrt(2)*pi) * (ak * cos.(kx*X + ky*Y) + bk * sin.(kx*X + ky*Y))/(τ^2 + (kx^2 + ky^2))^d
+        ω0 .+= 1/(sqrt(2)*pi) * (ak * cos.(kx*X + ky*Y) + bk * sin.(kx*X + ky*Y))/(τ^2 + (kx^2 + ky^2))^(d/2)
     end
     
     return ω0

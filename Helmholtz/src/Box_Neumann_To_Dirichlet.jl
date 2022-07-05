@@ -328,6 +328,7 @@ function c_func_random(x1::Float64, x2::Float64, θ::Array{Float64, 1}, seq_pair
     if mean === nothing && std === nothing
         c = cmin .+ (cmax - cmin)*(a > 0.0)
     else
+	# tanh.(2*a)
         c = mean .+ std^2 * tanh.(a) 
     end
     

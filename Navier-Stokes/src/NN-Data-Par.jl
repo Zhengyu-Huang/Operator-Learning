@@ -13,7 +13,7 @@ function Data_Generate()
     N_t = 10000;                                     # time step
     T = 10.0;                                        # final time
 
-    d=2.0
+    d=4.0
     τ=3.0
     # The forcing has N_θ terms
     N_θ = 100
@@ -23,6 +23,7 @@ function Data_Generate()
     θf = rand(Normal(0,1), N_data, N_θ)
     curl_f = zeros(N, N, N_data)
     for i = 1:N_data
+    	# 2*
         curl_f[:,:, i] .= generate_ω0(L, N, θf[i,:], seq_pairs, d, τ)
     end
 

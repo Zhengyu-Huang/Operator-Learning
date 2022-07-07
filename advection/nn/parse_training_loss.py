@@ -1,4 +1,3 @@
-import enum
 import numpy as np
 import matplotlib.pyplot as plt
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
@@ -15,7 +14,7 @@ colors = ["#3A637B", "#C4A46B", "#FF6917", "#D44141" ]
 markers = ["o", "s", "^", "*"]
 linestyle = ["dotted", "-.", "--", "-", ]
 
-lineskip = [2, 3, 2, 2]
+lineskip = [2, 2, 3, 2]
 lineend = [999,999,199,499]
 
 nn_names = ["PCA", "DeepONet", "PARA", "FNO"]
@@ -58,5 +57,5 @@ for idnn,nn in enumerate(nn_names):
 handles, labels = ax[0,0].get_legend_handles_labels()
 fig.legend(handles,labels,loc = "upper center",bbox_to_anchor=(0.5,0.99),ncol=4,frameon=False,fontsize=12,labelcolor="linecolor")
 plt.subplots_adjust(left=0.08,right=0.98,bottom=0.07,top=0.94,hspace=0.2,wspace=0.38)
-fig.savefig("NS-trainloss-v-epoch.png")
+fig.savefig("adv-trainloss-v-epoch.png")
 plt.close("all")

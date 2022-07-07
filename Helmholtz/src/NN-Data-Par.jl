@@ -18,6 +18,9 @@ function Data_Generate()
     porder = 1
     
     θ_field = rand(Normal(0, 1.0), N_data, N_θ);
+
+    # θ_field = npzread("/groups/esm/dzhuang/Operator-Learning/data/Random_Helmholtz_high_theta_100.npy") 
+
     κ_field = zeros(ne+1, ne+1, N_data)
     c_field = zeros(ne+1, ne+1, N_data)
 

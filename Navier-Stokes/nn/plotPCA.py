@@ -8,17 +8,31 @@ from matplotlib.lines import Line2D
 # mpl.use('TkAgg')
 import matplotlib.pyplot as plt
 
+coloroption="darkslides"
+
 plt.rc("figure", dpi=300)           # High-quality figure ("dots-per-inch")
 plt.rc("text", usetex=True)         # Crisp axis ticks
 plt.rc("font", family="serif")      # Crisp axis labels
-# plt.rc("legend", edgecolor="none")  # No boxes around legends
+plt.rc("legend", edgecolor='none')  # No boxes around legends
 
-plt.rc("figure",facecolor="#ffffff")
-plt.rc("axes",facecolor="#ffffff",edgecolor="#808080",labelcolor="#000000")
-plt.rc("savefig",facecolor="#ffffff")
-plt.rc("text",color="#000000")
-plt.rc("xtick",color="#808080")
-plt.rc("ytick",color="#808080")
+if coloroption == "paper":
+    plt.rc("figure",facecolor="#ffffff")
+    plt.rc("axes",facecolor="#ffffff",edgecolor="#808080",labelcolor="#000000")
+    plt.rc("savefig",facecolor="#ffffff")
+    plt.rc("text",color="#000000")
+    plt.rc("xtick",color="#808080")
+    plt.rc("ytick",color="#808080")
+    lbl = "#000000"
+    tk = "#808080"
+elif coloroption == "darkslides":
+    plt.rc("figure",facecolor="#353F4F")
+    plt.rc("axes",facecolor="#353F4F",edgecolor="#E7E6E6",labelcolor="#E7E6E6")
+    plt.rc("savefig",facecolor="#353F4F")
+    plt.rc("text",color="#E7E6E6")
+    plt.rc("xtick",color="#E7E6E6")
+    plt.rc("ytick",color="#E7E6E6")
+    lbl = "#E7E6E6"
+    tk = "#E7E6E6"
 
 M = 20000
 
@@ -61,9 +75,14 @@ for row,subfig in enumerate(subfigs):
     axs.append(subfig.subplots(1,4))
 ims = []
 for i in range(4):
-    ims.append(axs[0][i].pcolormesh(X,Y,np.reshape(Ug[:, i], (N,N)),shading="gouraud",cmap="gray",vmin=-0.03,vmax=0.03))
-    ims.append(axs[1][i].pcolormesh(X, Y, DeepONetPCA_data[:,:,2*i], shading="gouraud",cmap="gray",vmin=0,vmax=0.35))
-    ims.append(axs[2][i].pcolormesh(X,Y,DeepONetPCA_data[:,:,2*i+1],shading="gouraud",cmap="gray",vmin=-0.05,vmax=0.05))
+    if coloroption=="paper":
+        ims.append(axs[0][i].pcolormesh(X,Y,np.reshape(Ug[:, i], (N,N)),shading="gouraud",cmap="gray",vmin=-0.05,vmax=0.05))
+        ims.append(axs[1][i].pcolormesh(X, Y, DeepONetPCA_data[:,:,2*i], shading="gouraud",cmap="gray",vmin=0,vmax=0.35))
+        ims.append(axs[2][i].pcolormesh(X,Y,DeepONetPCA_data[:,:,2*i+1],shading="gouraud",cmap="gray",vmin=-0.05,vmax=0.05))
+    elif coloroption=="darkslides":
+        ims.append(axs[0][i].pcolormesh(X,Y,np.reshape(Ug[:, i], (N,N)),shading="gouraud",cmap="RdBu",vmin=-0.05,vmax=0.05))
+        ims.append(axs[1][i].pcolormesh(X, Y, DeepONetPCA_data[:,:,2*i], shading="gouraud",cmap="Blues",vmin=0,vmax=0.35))
+        ims.append(axs[2][i].pcolormesh(X,Y,DeepONetPCA_data[:,:,2*i+1],shading="gouraud",cmap="RdBu",vmin=-0.05,vmax=0.05))
 
     for j in range(3):
         axs[j][i].set_aspect("equal","box")
@@ -78,13 +97,18 @@ cax = []
 for i in range(3):
     temp = axs[i][3].get_position()
     cax.append(subfigs[i].add_axes([0.89,temp.y0,0.02,temp.y1-temp.y0]))
-    cb = plt.colorbar(ims[i],cax=cax[i])
+    if i==0:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[-0.05, 0, 0.05])
+    elif i == 1:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[0,0.1,0.2,0.3])
+    else:
+        cb = plt.colorbar(ims[i],cax=cax[i],ticks=[-0.05,0,0.05])
     cb.outline.set_visible(False)
     cb.ax.yaxis.set_tick_params(width=0.3)
     for t in cb.ax.get_yticklabels():
         t.set_fontsize(12)
 
 
-fig.savefig("NS-pca-vis.pdf")
+fig.savefig("NS-pca-vis-"+coloroption+".pdf")
 plt.close("all")
 # plt.colorbar()

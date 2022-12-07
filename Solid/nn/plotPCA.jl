@@ -1,6 +1,8 @@
 using NPZ
 using LinearAlgebra
 using PyPlot
+
+coloroption="paper"
 include("../../plotdefaults.jl")
 
 using Random, Distributions
@@ -71,5 +73,5 @@ cb.outline.set_visible(false)
 cb.ax.yaxis.set_tick_params(colors="#808080",width=0.3)
 
 
-fig2.savefig("Solid-pca-vis.pdf")
+fig2.savefig("Solid-pca-vis-"*coloroption*".pdf")
 plt.close()

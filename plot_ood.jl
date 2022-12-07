@@ -6,13 +6,13 @@ using PyPlot
 # can choose color option for paper plots or for darkslides, or make your own color option in plotdefaults.jl
 
 
-coloroption = "paper"
+coloroption = "darkslides"
 include("plotdefaults.jl")
 include("Data-NN-Plot.jl") # load data
 probs = ["Navier-Stokes","Navier-Stokes", "Helmholtz","Helmholtz", "Structural mechanics","Structural mechanics"]
 
 
-coloroption = "paper"
+
 
 
 ########### Error vs Data
@@ -154,13 +154,13 @@ for i = 1:2
 
 end
 
-ax[1,1].set_title("PCA-Net",pad=13)
-ax[1,2].set_title("DeepONet",pad=13)
-ax[1,3].set_title("PARA-Net",pad=13)
-ax[1,4].set_title("FNO",pad=13)
+ax[1,1].set_title("PCA-Net",pad=13,color=lbl)
+ax[1,2].set_title("DeepONet",pad=13,color=lbl)
+ax[1,3].set_title("PARA-Net",pad=13,color=lbl)
+ax[1,4].set_title("FNO",pad=13,color=lbl)
 
-ax[1,1].set_ylabel("Navier-Stokes")
-ax[2,1].set_ylabel("Structural mechanics")
+ax[1,1].set_ylabel("Navier-Stokes",color=lbl)
+ax[2,1].set_ylabel("Structural mechanics",color=lbl)
 ax[2,1].set_yticks([0.05, 0.1, 0.2, 0.4])
 ax[2,1][:yaxis][:set_minor_formatter](plt.NullFormatter())
 ax[2,1].set_yticklabels(["0.05", "0.1", "0.2", "0.4"])
